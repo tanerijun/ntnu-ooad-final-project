@@ -20,6 +20,10 @@ router
   .put('profile', [AuthController, 'updateProfile'])
   .as('auth.updateProfile')
   .use(middleware.auth())
+router
+  .put('password', [AuthController, 'updatePassword'])
+  .as('auth.updatePassword')
+  .use(middleware.auth())
 
 router.get('/', async () => {
   return {

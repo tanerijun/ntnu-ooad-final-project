@@ -36,3 +36,10 @@ export const updateProfileWithEmailValidator = vine.compile(
     email: uniqueEmail(),
   })
 )
+
+export const updatePasswordValidator = vine.compile(
+  vine.object({
+    currentPassword: vine.string(),
+    newPassword: password(),
+  })
+)

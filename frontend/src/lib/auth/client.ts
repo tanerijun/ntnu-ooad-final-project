@@ -15,6 +15,11 @@ export interface SignInWithPasswordParams {
   password: string;
 }
 
+interface UpdatePasswordParams {
+  currentPassword: string;
+  newPassword: string;
+}
+
 interface AuthResponse {
   token: string;
   message?: string;
@@ -86,6 +91,16 @@ class AuthClient {
     } catch (error) {
       logger.error('Profile update error:', error);
       return { error: 'Failed to update profile' };
+    }
+  }
+
+  async updatePassword(params: UpdatePasswordParams): Promise<{ error?: string }> {
+    try {
+      await apiClient.put('/password', params);
+      return {};
+    } catch (error) {
+      logger.error('Password update error:', error);
+      return { error: 'Failed to update password' };
     }
   }
 }

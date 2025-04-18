@@ -2,6 +2,7 @@ import User from '#models/user'
 import {
   loginValidator,
   registerValidator,
+  updatePasswordValidator,
   updateProfileValidator,
   updateProfileWithEmailValidator,
 } from '#validators/auth'
@@ -62,5 +63,26 @@ export default class AuthController {
 
     await user.merge(data).save()
     return { user }
+  }
+
+  async updatePassword({ request, auth }: HttpContext) {
+    const user = auth.user
+    if (!user) {
+      throw new errors.E_HTTP_EXCEPTION('User not found', { status: 500 })
+    }
+
+    const { currentPassword, newPassword } = await request.validateUsing(updatePasswordValidator)
+
+    try {
+      // Verify current password
+      await User.verifyCredentials(user.email, currentPassword)
+    } catch (error) {
+      throw new errors.E_HTTP_EXCEPTION('Current password is incorrect', { status: 400 })
+    }
+
+    user.password = newPassword
+    await user.save()
+
+    return { message: 'Password updated successfully' }
   }
 }
