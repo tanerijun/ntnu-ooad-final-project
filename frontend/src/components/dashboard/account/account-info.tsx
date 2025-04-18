@@ -12,11 +12,11 @@ import Typography from '@mui/material/Typography';
 
 import { useUser } from '@/hooks/use-user';
 
-export function AccountInfo(): React.JSX.Element {
+export function AccountInfo(): React.JSX.Element | null {
   const { user } = useUser();
 
   if (!user) {
-    throw new Error('User not found');
+    return null;
   }
 
   return (

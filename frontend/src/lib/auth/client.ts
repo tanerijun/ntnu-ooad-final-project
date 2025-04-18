@@ -25,16 +25,6 @@ interface MeResponse {
 }
 
 class AuthClient {
-  private baseUrl: string;
-
-  constructor() {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!baseUrl) {
-      throw new Error('Error initializing AuthClient:NEXT_PUBLIC_API_URL is not defined');
-    }
-    this.baseUrl = baseUrl;
-  }
-
   async signUp(params: SignUpParams): Promise<{ error?: string }> {
     try {
       const data = await apiClient.post<AuthResponse>('/register', params);
@@ -86,6 +76,16 @@ class AuthClient {
     } catch (error) {
       logger.error('Error during logout:', error);
       return { error: 'Logout failed' };
+    }
+  }
+
+  async updateProfile(data: { name: string; email: string }): Promise<{ error?: string }> {
+    try {
+      await apiClient.put<{ user: User }>('/profile', data);
+      return {};
+    } catch (error) {
+      logger.error('Profile update error:', error);
+      return { error: 'Failed to update profile' };
     }
   }
 }

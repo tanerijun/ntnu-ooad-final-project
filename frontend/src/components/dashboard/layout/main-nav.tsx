@@ -18,16 +18,16 @@ import { useUser } from '@/hooks/use-user';
 import { MobileNav } from './mobile-nav';
 import { UserPopover } from './user-popover';
 
-export function MainNav(): React.JSX.Element {
+export function MainNav(): React.JSX.Element | null {
   const { user } = useUser();
-
-  if (!user) {
-    throw new Error('User not found');
-  }
 
   const [openNav, setOpenNav] = React.useState<boolean>(false);
 
   const userPopover = usePopover<HTMLDivElement>();
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <React.Fragment>

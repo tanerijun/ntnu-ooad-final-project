@@ -23,7 +23,7 @@ export interface UserPopoverProps {
   open: boolean;
 }
 
-export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): React.JSX.Element {
+export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): React.JSX.Element | null {
   const { checkSession, user } = useUser();
 
   const router = useRouter();
@@ -49,7 +49,7 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
   }, [checkSession, router]);
 
   if (!user) {
-    throw new Error('User not found');
+    return null;
   }
 
   return (
