@@ -1,6 +1,7 @@
 'use client';
 
 import type { User } from '@/types/user';
+import { apiClient } from '@/lib/api/client';
 import { logger } from '@/lib/default-logger';
 
 export interface SignUpParams {
@@ -13,6 +14,15 @@ export interface SignUpParams {
 export interface SignInWithPasswordParams {
   email: string;
   password: string;
+}
+
+interface AuthResponse {
+  token: string;
+  message?: string;
+}
+
+interface MeResponse {
+  user: User;
 }
 
 class AuthClient {
@@ -28,20 +38,7 @@ class AuthClient {
 
   async signUp(params: SignUpParams): Promise<{ error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return { error: data.message || 'Registration failed' };
-      }
-
+      const data = await apiClient.post<AuthResponse>('/register', params);
       localStorage.setItem('access-token', data.token);
       return {};
     } catch (error) {
@@ -52,20 +49,7 @@ class AuthClient {
 
   async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return { error: data.message || 'Invalid credentials' };
-      }
-
+      const data = await apiClient.post<AuthResponse>('/login', params);
       localStorage.setItem('access-token', data.token);
       return {};
     } catch (error) {
@@ -76,28 +60,12 @@ class AuthClient {
 
   async getUser(): Promise<{ data?: User | null; error?: string }> {
     const token = localStorage.getItem('access-token');
-
     if (!token) {
       return { data: null };
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem('access-token');
-          return { data: null };
-        }
-        logger.error('Failed to fetch user data:', response.status);
-        return { error: 'Failed to fetch user data' };
-      }
-
-      const { user } = await response.json();
+      const { user } = await apiClient.get<MeResponse>('/me');
       return { data: user };
     } catch (error) {
       logger.error('Error fetching user data:', error);
@@ -113,17 +81,7 @@ class AuthClient {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/logout`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        return { error: 'Logout failed' };
-      }
-
+      await apiClient.delete('/logout');
       localStorage.removeItem('access-token');
       return {};
     } catch (error) {
