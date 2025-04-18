@@ -39,7 +39,6 @@ export function AccountInfo(): React.JSX.Element | null {
           fullWidth
           variant="text"
           onClick={() => {
-            // eslint-disable-next-line no-alert -- expected
             alert('TODO');
           }}
         >

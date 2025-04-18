@@ -95,6 +95,7 @@ module.exports = {
     'import/order': 'off', // using custom sort plugin
     'no-nested-ternary': 'off', // personal style
     'no-redeclare': 'off', // conflict with TypeScript function overloads
+    'no-alert': 'off', // personal style
     'react/jsx-fragments': 'off', // personal style
     'react/prop-types': 'off', // TypeScript is used for type checking
 

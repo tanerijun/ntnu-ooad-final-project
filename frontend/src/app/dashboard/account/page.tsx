@@ -9,7 +9,7 @@ import { AccountDetailsForm } from '@/components/dashboard/account/account-detai
 import { AccountInfo } from '@/components/dashboard/account/account-info';
 import { UpdatePasswordForm } from '@/components/dashboard/account/update-password-form';
 
-export const metadata = { title: `Account | Dashboard | ${config.site.name}` } satisfies Metadata;
+export const metadata = { title: `Account | ${config.site.name}` } satisfies Metadata;
 
 export default function Page(): React.JSX.Element {
   return (
