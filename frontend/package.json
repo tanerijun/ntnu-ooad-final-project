@@ -1,9 +1,8 @@
 {
-  "name": "material-kit-react",
-  "version": "4.0.0",
-  "author": "Devias",
+  "name": "ooad-study-helper",
+  "version": "0.0.1",
+  "author": "ntnu ooad",
   "licence": "MIT",
-  "homepage": "https://devias.io",
   "private": false,
   "scripts": {
     "dev": "next dev",

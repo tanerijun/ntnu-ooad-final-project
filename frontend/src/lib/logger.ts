@@ -1,6 +1,4 @@
-/* eslint-disable no-console -- Allow */
-
-// NOTE: A tracking system such as Sentry should replace the console
+// In Prod, use a tracking system such as Sentry. For now, we use console.log
 
 export const LogLevel = { NONE: 'NONE', ERROR: 'ERROR', WARN: 'WARN', DEBUG: 'DEBUG', ALL: 'ALL' } as const;
 
@@ -56,8 +54,10 @@ export class Logger {
     }
 
     if (level === LogLevel.ERROR) {
+      // eslint-disable-next-line -- Expected
       console.error(prefix, ...args);
     } else {
+      // eslint-disable-next-line -- Expected
       console.log(prefix, ...args);
     }
   }

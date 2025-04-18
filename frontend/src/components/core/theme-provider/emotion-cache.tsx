@@ -24,7 +24,6 @@ export default function NextAppDirEmotionCacheProvider(props: NextAppDirEmotionC
   const [registry] = React.useState<Registry>(() => {
     const cache = createCache(options);
     cache.compat = true;
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Expected
     const prevInsert = cache.insert;
     let inserted: { name: string; isGlobal: boolean }[] = [];
     cache.insert = (...args) => {
@@ -57,7 +56,7 @@ export default function NextAppDirEmotionCacheProvider(props: NextAppDirEmotionC
     const globals: { name: string; style: string }[] = [];
 
     inserted.forEach(({ name, isGlobal }) => {
-      const style = registry.cache.inserted[name];
+      const style = registry.cache.inserted[name]!;
 
       if (typeof style !== 'boolean') {
         if (isGlobal) {

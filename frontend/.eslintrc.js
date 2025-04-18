@@ -56,6 +56,22 @@ module.exports = {
       },
     ],
 
+    'no-console': [
+      'warn',
+      {
+        allow: ['info', 'table'],
+      },
+    ],
+
+    // Suggest using logger
+    'no-restricted-syntax': [
+      'warn',
+      {
+        selector: "CallExpression[callee.object.name='console'][callee.property.name=/^(log|error|warn|debug)$/]",
+        message: "Avoid using console.log/error/warn/debug. Use the logger from '@/lib/default-logger' instead.",
+      },
+    ],
+
     // Deactivated
     '@typescript-eslint/dot-notation': 'off', // paths are used with a dot notation
     '@typescript-eslint/no-misused-promises': 'off', // onClick with async fails
@@ -79,7 +95,6 @@ module.exports = {
     'import/order': 'off', // using custom sort plugin
     'no-nested-ternary': 'off', // personal style
     'no-redeclare': 'off', // conflict with TypeScript function overloads
-    'no-console': 'off',
     'react/jsx-fragments': 'off', // personal style
     'react/prop-types': 'off', // TypeScript is used for type checking
 

@@ -1,6 +1,7 @@
 'use client';
 
 import type { User } from '@/types/user';
+import { logger } from '@/lib/default-logger';
 
 export interface SignUpParams {
   firstName: string;
@@ -44,7 +45,7 @@ class AuthClient {
       localStorage.setItem('access-token', data.token);
       return {};
     } catch (error) {
-      console.error('Error signing up:', error);
+      logger.error('Registration error:', error);
       return { error: 'Registration failed' };
     }
   }
@@ -68,6 +69,7 @@ class AuthClient {
       localStorage.setItem('access-token', data.token);
       return {};
     } catch (error) {
+      logger.error('Authentication error:', error);
       return { error: 'Authentication failed' };
     }
   }
@@ -91,12 +93,14 @@ class AuthClient {
           localStorage.removeItem('access-token');
           return { data: null };
         }
+        logger.error('Failed to fetch user data:', response.status);
         return { error: 'Failed to fetch user data' };
       }
 
       const { user } = await response.json();
       return { data: user };
     } catch (error) {
+      logger.error('Error fetching user data:', error);
       return { error: 'Failed to fetch user data' };
     }
   }
@@ -123,6 +127,7 @@ class AuthClient {
       localStorage.removeItem('access-token');
       return {};
     } catch (error) {
+      logger.error('Error during logout:', error);
       return { error: 'Logout failed' };
     }
   }
