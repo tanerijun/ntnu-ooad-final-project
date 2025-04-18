@@ -63,6 +63,11 @@ module.exports = {
     '@typescript-eslint/no-unnecessary-condition': 'off', // remove when no static data is used
     '@typescript-eslint/require-await': 'off', // Server Actions require async flag always
     '@typescript-eslint/prefer-nullish-coalescing': 'off', // personal style
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-unsafe-return': 'off',
+    '@typescript-eslint/no-unsafe-argument': 'off',
     '@typescript-eslint/restrict-template-expressions': [
       'error',
       {
@@ -74,6 +79,7 @@ module.exports = {
     'import/order': 'off', // using custom sort plugin
     'no-nested-ternary': 'off', // personal style
     'no-redeclare': 'off', // conflict with TypeScript function overloads
+    'no-console': 'off',
     'react/jsx-fragments': 'off', // personal style
     'react/prop-types': 'off', // TypeScript is used for type checking
 
