@@ -5,8 +5,7 @@ import { apiClient } from '@/lib/api/client';
 import { logger } from '@/lib/default-logger';
 
 export interface SignUpParams {
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   password: string;
 }
