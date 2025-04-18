@@ -9,7 +9,7 @@ export interface Config {
 export const config: Config = {
   site: {
     name: 'OOAD Study Helper',
-    description: 'Increase your study efficiency',
+    description: 'A handy tool to help you with your study.',
     themeColor: '#090a0b',
     url: getSiteURL(),
   },

@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import { config } from '@/config';
 import { paths } from '@/paths';
 import { DynamicLogo } from '@/components/core/logo';
 
@@ -46,11 +47,11 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
             <Typography color="inherit" sx={{ fontSize: '24px', lineHeight: '32px', textAlign: 'center' }} variant="h1">
               Welcome to{' '}
               <Box component="span" sx={{ color: '#15b79e' }}>
-                OOAD Study Tool
+                {config.site.name}
               </Box>
             </Typography>
             <Typography align="center" variant="subtitle1">
-              A handy tool to help you with your study.
+              {config.site.description}
             </Typography>
           </Stack>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
