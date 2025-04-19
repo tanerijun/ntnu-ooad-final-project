@@ -40,3 +40,9 @@ router.get('/note', async () => {
     note: 'testnote',
   }
 })
+
+router.get('/health', async () => {
+  return {
+    status: 'ok',
+  }
+})
