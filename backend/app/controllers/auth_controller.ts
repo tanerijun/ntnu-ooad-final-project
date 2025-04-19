@@ -6,7 +6,10 @@ import {
   updateProfileValidator,
   updateProfileWithEmailValidator,
 } from '#validators/auth'
+import env from '#start/env'
 import { errors } from '@adonisjs/core'
+import { cuid } from '@adonisjs/core/helpers'
+import drive from '@adonisjs/drive/services/main'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class AuthController {
@@ -84,5 +87,58 @@ export default class AuthController {
     await user.save()
 
     return { message: 'Password updated successfully' }
+  }
+
+  async updateAvatar({ request, auth }: HttpContext) {
+    const user = auth.user
+    if (!user) {
+      throw new errors.E_HTTP_EXCEPTION('User not found', { status: 500 })
+    }
+
+    const avatar = request.file('avatar', {
+      size: '5mb',
+      extnames: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    })
+
+    if (!avatar) {
+      throw new errors.E_HTTP_EXCEPTION('No avatar file provided', { status: 400 })
+    }
+
+    if (!avatar.isValid) {
+      throw new errors.E_HTTP_EXCEPTION(avatar.errors[0].message, { status: 400 })
+    }
+
+    try {
+      // Delete old avatar if it exists
+      if (user.avatarUrl) {
+        const oldKey = user.avatarUrl.replace(env.get('R2_PUBLIC_URL'), '').substring(1) // Remove leading slash
+
+        try {
+          await drive.use('r2').delete(oldKey)
+        } catch (deleteError) {
+          console.error('Failed to delete old avatar:', deleteError)
+        }
+      }
+
+      const key = `avatars/${cuid()}.${avatar.extname}`
+      await avatar.moveToDisk(key)
+
+      const r2Url = await drive.use('r2').getUrl(key)
+      const publicUrl = r2Url.replace(
+        `${env.get('R2_ENDPOINT')}/${env.get('R2_BUCKET')}`,
+        env.get('R2_PUBLIC_URL')
+      )
+
+      user.avatarUrl = publicUrl
+      await user.save()
+
+      return {
+        message: 'Avatar updated successfully',
+        avatarUrl: user.avatarUrl,
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      throw new errors.E_HTTP_EXCEPTION('Failed to upload avatar', { status: 500 })
+    }
   }
 }

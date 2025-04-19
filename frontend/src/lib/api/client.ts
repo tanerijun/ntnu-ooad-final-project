@@ -19,14 +19,17 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private getHeaders(): HeadersInit {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
+  private getHeaders(data?: unknown): HeadersInit {
+    const headers: HeadersInit = {};
 
     const token = localStorage.getItem('access-token');
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Only set Content-Type if not sending FormData
+    if (!(data instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
     }
 
     return headers;
@@ -52,14 +55,16 @@ class ApiClient {
     const { params, data, ...fetchOptions } = options;
     const url = this.buildUrl(endpoint, params);
 
+    const headers = this.getHeaders(data);
+
     const response = await fetch(url, {
       ...fetchOptions,
       method,
       headers: {
-        ...this.getHeaders(),
+        ...headers,
         ...fetchOptions.headers,
       },
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
     });
 
     if (!response.ok) {

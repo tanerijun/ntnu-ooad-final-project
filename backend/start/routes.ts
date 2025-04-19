@@ -24,6 +24,10 @@ router
   .put('password', [AuthController, 'updatePassword'])
   .as('auth.updatePassword')
   .use(middleware.auth())
+router
+  .post('avatar', [AuthController, 'updateAvatar'])
+  .as('auth.updateAvatar')
+  .use(middleware.auth())
 
 router.get('/', async () => {
   return {

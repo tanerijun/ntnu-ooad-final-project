@@ -79,7 +79,7 @@ export function MainNav(): React.JSX.Element | null {
             <Avatar
               onClick={userPopover.handleOpen}
               ref={userPopover.anchorRef}
-              src={user.avatar}
+              src={user.avatarUrl}
               sx={{ cursor: 'pointer' }}
             >
               {user.name.charAt(0) || ''}
