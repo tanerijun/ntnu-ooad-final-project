@@ -133,7 +133,7 @@ export function SignInForm(): React.JSX.Element {
           </Button>
         </Stack>
       </form>
-      <Alert color="warning">Remember to sign up first!</Alert>
+      <Alert color="warning">第一次連會比較慢，請耐心等待!（server boot up)</Alert>
     </Stack>
   );
 }
