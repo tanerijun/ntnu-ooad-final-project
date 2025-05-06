@@ -46,3 +46,17 @@ router.get('/health', async () => {
     status: 'ok',
   }
 })
+
+router
+  .group(() => {
+    router.get('/timer', async (ctx) => {
+      const { default: SessionsController } = await import('#controllers/sessions_controller')
+      return new SessionsController().index(ctx)
+    })
+
+    router.post('/', async (ctx) => {
+      const { default: SessionsController } = await import('#controllers/sessions_controller')
+      return new SessionsController().store(ctx)
+    })
+  })
+  .prefix('/api')
