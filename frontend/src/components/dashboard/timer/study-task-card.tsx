@@ -1,5 +1,5 @@
 'use client';
-
+import * as React from 'react';
 import { useState, useEffect } from 'react';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -12,7 +12,7 @@ interface StudyTaskCardProps {
   onTimeUpdate: (seconds: number) => void; // 告訴外面目前累積多少秒
 }
 
-export default function StudyTaskCard({
+export function StudyTaskCard({
   subjectName,
   onTimeUpdate,
 }: StudyTaskCardProps): React.JSX.Element {
@@ -20,7 +20,7 @@ export default function StudyTaskCard({
   const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
 
     if (isRunning) {
       timer = setInterval(() => {
@@ -28,7 +28,7 @@ export default function StudyTaskCard({
       }, 1000);
     }
 
-    return () => clearInterval(timer);
+    return () => {clearInterval(timer);}
   }, [isRunning]);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function StudyTaskCard({
           <Button
             variant="contained"
             color={isRunning ? 'warning' : 'success'}
-            onClick={() => setIsRunning((prev) => !prev)}
+            onClick={() => { setIsRunning((prev) => !prev)}}
             sx={{ minWidth: '60px' }}
           >
             {isRunning ? '暫停' : '開始'}
