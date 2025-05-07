@@ -22,6 +22,15 @@ module.exports = {
     },
   },
   rules: {
+      "unicorn/filename-case": [
+      "error",
+      {
+        "case": "kebabCase",
+        "ignore": [
+          "^styleConfig\\.js$"
+        ]
+      }
+    ],
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
