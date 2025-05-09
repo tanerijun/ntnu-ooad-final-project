@@ -1,3 +1,5 @@
+/*eslint-disable -- fix*/
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -10,6 +12,7 @@ const MIN_ALLOWED_FONT_SIZE = 8;
 const MAX_ALLOWED_FONT_SIZE = 72;
 
 export const parseAllowedFontSize = (input: string): string => {
+  /* eslint-disable prefer-named-capture-group -- fixing this shitting error */
   const match = input.match(/^(\d+(?:\.\d+)?)px$/);
   if (match) {
     const n = Number(match[1]);

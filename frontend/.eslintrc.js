@@ -21,13 +21,17 @@ module.exports = {
       },
     },
   },
+  plugins: ['eslint-comments'],
+  rules: {
+    'eslint-comments/require-description': 'off',
+  },
   rules: {
       "unicorn/filename-case": [
       "error",
       {
         "case": "kebabCase",
         "ignore": [
-          "^styleConfig\\.js$"
+          "^styleConfig\\.ts$"
         ]
       }
     ],

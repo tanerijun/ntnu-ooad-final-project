@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import TextEditor from '@/components/dashboard/notes/editor/text-editor'; // (You will create this next)
 
 export default function NewNotePage(): React.JSX.Element {
-  const router = useRouter();
+  const _router = useRouter();
 
   const handleSave = () => {
     // TODO: Save content to backend

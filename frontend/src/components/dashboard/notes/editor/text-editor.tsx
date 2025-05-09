@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-
+import * as React from 'react';
 import {AutoFocusPlugin} from '@lexical/react/LexicalAutoFocusPlugin';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
@@ -98,8 +98,7 @@ const constructImportMap = (): DOMConversionMap => {
         conversion: (element) => {
           const output = importer.conversion(element);
           if (
-            output === null ||
-            output.forChild === undefined ||
+            output?.forChild === undefined ||
             output.after !== undefined ||
             output.node !== null
           ) {
