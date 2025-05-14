@@ -34,6 +34,7 @@ import { parseAllowedColor, parseAllowedFontSize } from './styleConfig';
 import { isHTMLElement } from 'lexical';
 import { useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { logger } from '@/lib/default-logger';
 
 interface TextEditorProps {
   initialContent?: string;
@@ -156,7 +157,7 @@ export default function TextEditor({ initialContent, onChange }: TextEditorProps
     theme: ExampleTheme,
     nodes: [ParagraphNode, TextNode],
     onError(error: Error) {
-      console.error('Lexical Error:', error);
+      logger.error('Lexical Error:', error);
     },
     html: {
       export: exportMap,
