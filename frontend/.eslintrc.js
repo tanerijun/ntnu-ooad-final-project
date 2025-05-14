@@ -21,6 +21,10 @@ module.exports = {
       },
     },
   },
+  plugins: ['eslint-comments'],
+  rules: {
+    'eslint-comments/require-description': 'off',
+  },
   rules: {
     '@typescript-eslint/no-unused-vars': [
       'error',

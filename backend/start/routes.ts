@@ -11,6 +11,7 @@ import router from '@adonisjs/core/services/router'
 import env from '#start/env'
 import { middleware } from './kernel.js'
 const AuthController = () => import('#controllers/auth_controller')
+const NotesController = () => import('#controllers/notes_controller')
 
 router.post('register', [AuthController, 'register']).as('auth.register')
 router.post('login', [AuthController, 'login']).as('auth.login')
@@ -35,11 +36,15 @@ router.get('/', async () => {
   }
 })
 
-router.get('/note', async () => {
-  return {
-    note: 'testnote',
-  }
-})
+router
+  .group(() => {
+    router.get('notes', [NotesController, 'index']).as('notes.index')
+    router.post('notes', [NotesController, 'store']).as('notes.store')
+    router.get('notes/:id', [NotesController, 'show']).as('notes.show')
+    router.put('notes/:id', [NotesController, 'update']).as('notes.update')
+    router.delete('notes/:id', [NotesController, 'destroy']).as('notes.destroy')
+  })
+  .use(middleware.auth())
 
 router.get('/health', async () => {
   return {
