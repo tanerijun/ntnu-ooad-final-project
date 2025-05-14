@@ -1,10 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Stack, Typography, Button, CircularProgress } from '@mui/material';
-import { notesClient, Note } from '@/lib/notes/client';
+import { useParams, useRouter } from 'next/navigation';
+import { Button, CircularProgress, Stack, Typography } from '@mui/material';
+
+import { notesClient, type Note } from '@/lib/notes/client';
 import TextEditor from '@/components/dashboard/notes/editor/text-editor';
 
 export default function EditNotePage(): React.JSX.Element {
@@ -14,10 +15,10 @@ export default function EditNotePage(): React.JSX.Element {
   const [note, setNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<string>('');
-  
+
   useEffect(() => {
     if (!id) return;
-  
+
     void (async () => {
       const fetchedNote = await notesClient.get(Number(id));
       if (fetchedNote) {
@@ -33,7 +34,7 @@ export default function EditNotePage(): React.JSX.Element {
     try {
       await notesClient.update(note.id, content);
       // alert('Note saved!');
-      router.push('/dashboard/notes');  // OR update `setNote(updated)` if you want to stay on the page
+      router.push('/dashboard/notes'); // OR update `setNote(updated)` if you want to stay on the page
     } catch (err) {
       alert('Failed to save note.');
     }

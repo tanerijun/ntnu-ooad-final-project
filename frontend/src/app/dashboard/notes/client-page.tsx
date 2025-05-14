@@ -3,19 +3,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Stack,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardActionArea,
-  CircularProgress,
-} from '@mui/material';
+import { Card, CardActionArea, CardContent, CircularProgress, Grid, Stack, Typography } from '@mui/material';
 
+import { logger } from '@/lib/default-logger';
+import { notesClient, type Note } from '@/lib/notes/client';
 import { AddNoteButton } from '@/components/dashboard/notes/add-note-button';
-import { notesClient, Note } from '@/lib/notes/client';
-import { logger } from '@/lib/default-logger'
 
 export default function ClientNotesDashboardPage(): React.JSX.Element {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -30,7 +22,7 @@ export default function ClientNotesDashboardPage(): React.JSX.Element {
         setNotes(sorted);
       })
       .catch((err: unknown) => {
-        logger.error("Failed to fetch notes", err);
+        logger.error('Failed to fetch notes', err);
       })
       .finally(() => {
         setLoading(false);
@@ -38,9 +30,8 @@ export default function ClientNotesDashboardPage(): React.JSX.Element {
   }, []);
 
   const handleNoteClick = (id: number) => {
-        router.push(`/dashboard/notes/${id}/edit`);
-    };
-
+    router.push(`/dashboard/notes/${id}/edit`);
+  };
 
   return (
     <Stack spacing={3}>
@@ -60,7 +51,11 @@ export default function ClientNotesDashboardPage(): React.JSX.Element {
           {notes.map((note) => (
             <Grid item xs={12} sm={6} md={4} key={note.id}>
               <Card>
-                <CardActionArea onClick={() => {handleNoteClick(note.id)}}>
+                <CardActionArea
+                  onClick={() => {
+                    handleNoteClick(note.id);
+                  }}
+                >
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold">
                       Note #{note.id}

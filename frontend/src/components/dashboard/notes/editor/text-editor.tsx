@@ -1,40 +1,37 @@
 'use client';
 
 import * as React from 'react';
-import {
-  LexicalComposer,
-  type InitialConfigType,
-} from '@lexical/react/LexicalComposer';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { useEffect } from 'react';
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
+import { LexicalComposer, type InitialConfigType } from '@lexical/react/LexicalComposer';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import {
-  ParagraphNode,
-  TextNode,
-  $isTextNode,
-  type Klass,
-  type LexicalNode,
-  type DOMExportOutput,
-  type DOMExportOutputMap,
-  type DOMConversionMap,
-  type LexicalEditor,
-  $getRoot,
   $createParagraphNode,
   $createTextNode,
+  $getRoot,
+  $isTextNode,
+  isHTMLElement,
+  ParagraphNode,
+  TextNode,
+  type DOMConversionMap,
+  type DOMExportOutput,
+  type DOMExportOutputMap,
+  type Klass,
+  type LexicalEditor,
+  type LexicalNode,
 } from 'lexical';
 
+import { logger } from '@/lib/default-logger';
+
 import ExampleTheme from './ExampleTheme';
+import { parseAllowedColor, parseAllowedFontSize } from './style-config';
 import ToolbarPlugin from './ToolbarPlugin';
 import TreeViewPlugin from './TreeViewPlugin';
-import { parseAllowedColor, parseAllowedFontSize } from './styleConfig';
-import { isHTMLElement } from 'lexical';
-import { useEffect } from 'react';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { logger } from '@/lib/default-logger';
 
 interface TextEditorProps {
   initialContent?: string;
@@ -43,16 +40,10 @@ interface TextEditorProps {
 
 const placeholder = 'Enter some rich text...';
 
-const removeStylesExportDOM = (
-  editor: LexicalEditor,
-  target: LexicalNode,
-): DOMExportOutput => {
+const removeStylesExportDOM = (editor: LexicalEditor, target: LexicalNode): DOMExportOutput => {
   const output = target.exportDOM(editor);
   if (output && isHTMLElement(output.element)) {
-    for (const el of [
-      output.element,
-      ...output.element.querySelectorAll('[style],[class],[dir="ltr"]'),
-    ]) {
+    for (const el of [output.element, ...output.element.querySelectorAll('[style],[class],[dir="ltr"]')]) {
       el.removeAttribute('class');
       el.removeAttribute('style');
       if (el.getAttribute('dir') === 'ltr') {
@@ -98,11 +89,7 @@ const constructImportMap = (): DOMConversionMap => {
         ...importer,
         conversion: (element) => {
           const output = importer.conversion(element);
-          if (
-            output?.forChild === undefined ||
-            output.after !== undefined ||
-            output.node !== null
-          ) {
+          if (output?.forChild === undefined || output.after !== undefined || output.node !== null) {
             return output;
           }
           const extraStyles = getExtraStyles(element);

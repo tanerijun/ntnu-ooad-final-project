@@ -26,15 +26,6 @@ module.exports = {
     'eslint-comments/require-description': 'off',
   },
   rules: {
-      "unicorn/filename-case": [
-      "error",
-      {
-        "case": "kebabCase",
-        "ignore": [
-          "^styleConfig\\.ts$"
-        ]
-      }
-    ],
     '@typescript-eslint/no-unused-vars': [
       'error',
       {

@@ -42,7 +42,6 @@ export class NotesClient {
     try {
       logger.debug(`Updating note ${id} with content:`, content);
       return await apiClient.put<Note>(`/notes/${id}`, { content });
-      
     } catch (error) {
       logger.error(`Failed to update note ${id}:`, error);
       return null;

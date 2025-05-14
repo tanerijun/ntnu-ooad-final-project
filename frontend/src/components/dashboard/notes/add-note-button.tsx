@@ -1,9 +1,10 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import Button from '@mui/material/Button';
 import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { useRouter } from 'next/navigation';
+
 import { notesClient } from '@/lib/notes/client';
 
 export function AddNoteButton(): React.JSX.Element {
@@ -19,11 +20,7 @@ export function AddNoteButton(): React.JSX.Element {
   };
 
   return (
-    <Button
-      startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-      variant="contained"
-      onClick={handleAdd}
-    >
+    <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={handleAdd}>
       Add
     </Button>
   );
