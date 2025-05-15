@@ -11,6 +11,7 @@ import router from '@adonisjs/core/services/router'
 import env from '#start/env'
 import { middleware } from './kernel.js'
 const AuthController = () => import('#controllers/auth_controller')
+const TimerSessionsController = () => import('#controllers/timer_sessions_controller')
 
 router.post('register', [AuthController, 'register']).as('auth.register')
 router.post('login', [AuthController, 'login']).as('auth.login')
@@ -47,6 +48,7 @@ router.get('/health', async () => {
   }
 })
 
+router.get('/timer_session_show', [TimerSessionsController, 'index']).as('timer.session_show')
 router
   .group(() => {
     router.get('/timer', async (ctx) => {
