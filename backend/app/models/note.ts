@@ -1,6 +1,7 @@
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, belongsTo, manyToMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, ManyToMany } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
+import Tag from '#models/tag'
 import { DateTime } from 'luxon'
 
 export default class Note extends BaseModel {
@@ -23,4 +24,9 @@ export default class Note extends BaseModel {
 
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
+
+  @manyToMany(() => Tag, {
+    pivotTable: 'note_tags',
+  })
+  declare tags: ManyToMany<typeof Tag>
 }
