@@ -9,7 +9,7 @@ export default function TestTopicNavPage(): React.JSX.Element {
       <Typography variant="h4" gutterBottom>
         Test TopicNavItem
       </Typography>
-      <TopicNavItem title="test" />
+      <TopicNavItem />
     </Box>
   );
 }

@@ -3,17 +3,35 @@
 import { apiClient } from '@/lib/api/client';
 import { logger } from '@/lib/default-logger';
 
+// export interface Note {
+//   id: number;
+//   content: string;
+//   createdAt: string;
+//   updatedAt: string;
+//   tags: string[];
+// }
+
+export interface Tag {
+  id: number;
+  name: string;
+}
+
 export interface Note {
   id: number;
   content: string;
   createdAt: string;
   updatedAt: string;
+  tags: Tag[];  // not string[]
 }
 
 export class NotesClient {
-  async create(): Promise<Note | null> {
+  async create(tags: string[] = []): Promise<Note | null> {
     try {
-      return await apiClient.post<Note>('/notes', { content: '' });
+      logger.debug('Creating note with tags:', tags);
+      return await apiClient.post<Note>('/notes', {
+        content: '',
+        tags,
+      });
     } catch (error) {
       logger.error('Note creation failed:', error);
       return null;
@@ -38,10 +56,10 @@ export class NotesClient {
     }
   }
 
-  async update(id: number, content: string): Promise<Note | null> {
+  async update(id: number, content: string, tags?: string[]): Promise<Note | null> {
     try {
-      logger.debug(`Updating note ${id} with content:`, content);
-      return await apiClient.put<Note>(`/notes/${id}`, { content });
+      logger.debug(`Updating note ${id} with content and tags`, { content, tags });
+      return await apiClient.put<Note>(`/notes/${id}`, { content, tags });
     } catch (error) {
       logger.error(`Failed to update note ${id}:`, error);
       return null;

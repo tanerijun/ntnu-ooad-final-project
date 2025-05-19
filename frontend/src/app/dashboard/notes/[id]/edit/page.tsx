@@ -15,6 +15,7 @@ export default function EditNotePage(): React.JSX.Element {
   const [note, setNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<string>('');
+  const [tags, setTags] = useState<string[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -24,6 +25,7 @@ export default function EditNotePage(): React.JSX.Element {
       if (fetchedNote) {
         setNote(fetchedNote);
         setContent(fetchedNote.content);
+        setTags(fetchedNote.tags.map((tag) => tag.name));
       }
       setLoading(false);
     })();
@@ -32,7 +34,8 @@ export default function EditNotePage(): React.JSX.Element {
   const handleSave = async () => {
     if (!note) return;
     try {
-      await notesClient.update(note.id, content);
+      await notesClient.update(note.id, content, tags);
+      
       // alert('Note saved!');
       router.push('/dashboard/notes'); // OR update `setNote(updated)` if you want to stay on the page
     } catch (err) {

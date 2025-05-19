@@ -64,10 +64,24 @@ export  function SideNav(): React.JSX.Element {
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
-        {renderNavItems({ pathname, items: navItems })}
-        <TopicNavItem title=''/>
+        {/* Primary nav items */}
+        <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
+          {renderNavItems({ pathname, items: navItems })}
+        </Stack>
+
+        {/* Topic section */}
+        <Divider sx={{ my: 2, borderColor: 'var(--mui-palette-neutral-700)' }} />
+        <Typography
+          variant="subtitle2"
+          color="var(--mui-palette-neutral-100)"
+          sx={{ px: '12px', pb: 1 }}
+        >
+          Topics
+        </Typography>
+        <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
+          <TopicNavItem />
+        </Stack>
       </Box>
-      
     </Box>
   );
 }
