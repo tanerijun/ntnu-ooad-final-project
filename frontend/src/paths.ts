@@ -7,6 +7,7 @@ export const paths = {
     notes: '/dashboard/notes',
     timer: '/dashboard/timer',
     settings: '/dashboard/settings',
+    topic: '/dashboard/topic'
   },
   errors: { notFound: '/errors/not-found' },
 } as const;

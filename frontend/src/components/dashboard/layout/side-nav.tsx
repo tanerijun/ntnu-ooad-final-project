@@ -16,7 +16,9 @@ import { Logo } from '@/components/core/logo';
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
 
-export function SideNav(): React.JSX.Element {
+import TopicNavItem from "@/components/dashboard/topic/topic-nav";
+
+export  function SideNav(): React.JSX.Element {
   const pathname = usePathname();
 
   return (
@@ -63,7 +65,9 @@ export function SideNav(): React.JSX.Element {
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
         {renderNavItems({ pathname, items: navItems })}
+        <TopicNavItem title=''/>
       </Box>
+      
     </Box>
   );
 }
@@ -144,3 +148,4 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
     </li>
   );
 }
+
