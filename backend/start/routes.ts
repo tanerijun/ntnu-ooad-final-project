@@ -12,6 +12,7 @@ import env from '#start/env'
 import { middleware } from './kernel.js'
 const AuthController = () => import('#controllers/auth_controller')
 const TimerSessionsController = () => import('#controllers/timer_sessions_controller')
+const UserTaskController = () => import('#controllers/user_task_controller')
 const NotesController = () => import('#controllers/notes_controller')
 
 router.post('register', [AuthController, 'register']).as('auth.register')
@@ -52,18 +53,9 @@ router.get('/health', async () => {
     status: 'ok',
   }
 })
-
+router.put('/timer_sessions/:id', [TimerSessionsController, 'update']).as('timer.session_update')
+router.post('/timer_sessions_store', [TimerSessionsController, 'store']).as('timer.session_store')
 router.get('/timer_session_show', [TimerSessionsController, 'index']).as('timer.session_show')
-router
-  .group(() => {
-    router.get('/timer', async (ctx) => {
-      const { default: SessionsController } = await import('#controllers/sessions_controller')
-      return new SessionsController().index(ctx)
-    })
-
-    router.post('/', async (ctx) => {
-      const { default: SessionsController } = await import('#controllers/sessions_controller')
-      return new SessionsController().store(ctx)
-    })
-  })
-  .prefix('/api')
+router.put('/user_tasks_hide/:subject', [UserTaskController, 'hide']).use(middleware.auth())
+router.get('/user_tasks_today', [UserTaskController, 'index']).use(middleware.auth())
+router.post('/user_tasks_store', [UserTaskController, 'store']).as('user.task_store')
