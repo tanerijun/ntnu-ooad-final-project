@@ -23,6 +23,7 @@ export function TimerPage(): React.JSX.Element {
   //const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRecords, setTimeRecords] = useState<Record<number, number>>({});
+  const [activeTaskId, setActiveTaskId] = useState<number | null>(null);
 
   const fetchSessions = React.useCallback(async () => {
     if (!user) return;
@@ -81,13 +82,21 @@ export function TimerPage(): React.JSX.Element {
         {tasks.map((task) => (
           <StudyTaskCard
             key={task.id}
-            taskId={task.id} // 必須傳入
+            taskId={task.id}
             subjectName={task.subject}
             initialDuration={task.duration}
             onTimeUpdate={(seconds) => {
               handleTimeUpdate(task.id, seconds);
             }}
-            onSaveSuccess={fetchSessions} // 儲存成功後重新載入
+            onSaveSuccess={fetchSessions}
+            onRequestStart={(taskState) => {
+              if (taskState) {
+                setActiveTaskId(task.id);
+              } else {
+                setActiveTaskId(null);
+              }
+            }}
+            isRunning={activeTaskId === task.id}
           />
         ))}
       </Stack>

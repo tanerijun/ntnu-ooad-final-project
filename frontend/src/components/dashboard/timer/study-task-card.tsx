@@ -15,6 +15,8 @@ import { logger } from '@/lib/default-logger';
 import { timerSessionsClient } from '@/lib/timer/client';
 
 interface StudyTaskCardProps {
+  isRunning: boolean;
+  onRequestStart: (taskState: boolean) => void;
   taskId: number; // 必須有 taskId 才能更新正確的資料
   subjectName: string;
   initialDuration: number;
@@ -23,13 +25,14 @@ interface StudyTaskCardProps {
 }
 
 export function StudyTaskCard({
+  isRunning,
   taskId,
   subjectName,
   initialDuration,
+  onRequestStart,
   onTimeUpdate,
   onSaveSuccess,
 }: StudyTaskCardProps): React.JSX.Element {
-  const [isRunning, setIsRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(initialDuration);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -78,22 +81,23 @@ export function StudyTaskCard({
 
   // 每30秒自動保存
   useEffect(() => {
+    logger.debug('計時器啟動', isRunning);
     if (!isRunning) return;
     const autoSaveTimer = setInterval(() => {
       void saveDuration();
+      logger.debug('自動保存計時');
     }, 30000); // 30秒
     return () => {
       clearInterval(autoSaveTimer);
     };
-  }, [isRunning, saveDuration]);
+  }, [isRunning]);
 
   // 暫停時立即保存
   const handleToggle = async () => {
     if (isRunning) {
-      await saveDuration(); // 等待資料庫更新完成
-      setIsRunning(false); // 再切換狀態
-    } else {
-      setIsRunning(true);
+      logger.debug('暫停計時');
+      await saveDuration();
+      onRequestStart(false); // 這樣即可
     }
   };
 
@@ -120,7 +124,14 @@ export function StudyTaskCard({
           <Button
             variant="contained"
             color={isRunning ? 'warning' : 'success'}
-            onClick={handleToggle}
+            onClick={() => {
+              if (!isRunning) {
+                onRequestStart(true); // 請求啟動，父元件會切換 activeTaskId
+              } else {
+                void handleToggle(); // 暫停自己
+                logger.debug('暫停計時');
+              }
+            }}
             disabled={isSaving}
             sx={{ minWidth: '60px' }}
           >
@@ -130,7 +141,7 @@ export function StudyTaskCard({
             <Typography variant="h6" fontWeight="bold">
               {subjectName || '未命名科目'}
             </Typography>
-            <Typography color="text.secondary">已讀時間：{formatTime(elapsedTime)}</Typography>
+            <Typography color="text.secondary">專注時間：{formatTime(elapsedTime)}</Typography>
             {saveError ? (
               <Typography color="error" variant="caption">
                 {saveError}
