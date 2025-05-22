@@ -3,6 +3,8 @@
 
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -73,12 +75,47 @@ export function TimerPage(): React.JSX.Element {
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
 
   return (
-    <Stack spacing={4} alignItems="center" paddingTop={4}>
-      <AddTimerButton onSuccess={fetchSessions} />
-      <Typography variant="h5" fontWeight="bold">
-        📚 今日累積讀書時間：{Math.floor(totalDuration / 60)}分{totalDuration % 60}秒
-      </Typography>
-      <Stack spacing={3} width="100%" alignItems="center">
+    <Stack spacing={4} alignItems="center" paddingTop={4} sx={{ width: '100%' }}>
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: 800,
+          px: 2,
+          mb: 2,
+        }}
+      >
+        <Card
+          elevation={0}
+          sx={{
+            bgcolor: 'transparent',
+            p: 2,
+            borderRadius: 2,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Stack spacing={0.5}>
+            <Typography variant="subtitle1" color="primary.dark" fontWeight="medium">
+              今日累積讀書時間
+            </Typography>
+            <Typography variant="h4" fontWeight="bold" color="primary.dark" sx={{ fontFamily: 'monospace' }}>
+              {Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, '0')}
+            </Typography>
+          </Stack>
+          <AddTimerButton onSuccess={fetchSessions} />
+        </Card>
+      </Box>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+          gap: 3,
+          width: '100%',
+          maxWidth: 800,
+          px: 2,
+        }}
+      >
         {tasks.map((task) => (
           <StudyTaskCard
             key={task.id}
@@ -99,7 +136,7 @@ export function TimerPage(): React.JSX.Element {
             isRunning={activeTaskId === task.id}
           />
         ))}
-      </Stack>
+      </Box>
     </Stack>
   );
 }

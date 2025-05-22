@@ -2,14 +2,13 @@
 
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
-// Material UI 叉叉 icon
-import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Icon from '@mui/material/Icon';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { X as XIcon } from '@phosphor-icons/react/dist/ssr/X';
 
 import { logger } from '@/lib/default-logger';
 import { timerSessionsClient } from '@/lib/timer/client';
@@ -113,46 +112,66 @@ export function StudyTaskCard({
   };
 
   return (
-    <Card variant="outlined" sx={{ width: '100%', maxWidth: 400, position: 'relative' }}>
+    <Card
+      variant="outlined"
+      sx={{
+        width: '100%',
+        position: 'relative',
+        transition: 'all 0.3s ease',
+        boxShadow: isRunning ? 4 : 1,
+        border: '1px solid',
+        borderColor: isRunning ? 'primary.main' : 'transparent',
+        '&:hover': {
+          boxShadow: 3,
+        },
+      }}
+    >
       <CardContent>
         {/* 右上角叉叉 */}
         <IconButton aria-label="隱藏" onClick={handleHide} sx={{ position: 'absolute', top: 8, right: 8 }} size="small">
-          <Icon>X</Icon> {/* 這裡的 "close" 就是顯示叉叉 */}
+          <XIcon />
         </IconButton>
-        <Stack direction="row" alignItems="center" spacing={2}>
+        <Stack spacing={2}>
+          <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
+            {subjectName || '未命名科目'}
+          </Typography>
+
+          <Typography
+            variant="h4"
+            align="center"
+            sx={{
+              fontFamily: 'monospace',
+              color: isRunning ? 'primary.main' : 'text.primary',
+              fontWeight: 'bold',
+            }}
+          >
+            {formatTime(elapsedTime)}
+          </Typography>
+
           {/* ...原本的 Button 和內容 ... */}
-          <Button
+          <LoadingButton
             variant="contained"
             color={isRunning ? 'warning' : 'success'}
             onClick={() => {
               if (!isRunning) {
-                onRequestStart(true); // 請求啟動，父元件會切換 activeTaskId
+                onRequestStart(true);
               } else {
-                void handleToggle(); // 暫停自己
-                logger.debug('暫停計時');
+                void handleToggle();
               }
             }}
             disabled={isSaving}
-            sx={{ minWidth: '60px' }}
+            loading={isSaving}
+            fullWidth
+            sx={{ mt: 1 }}
           >
-            {isSaving ? '保存中...' : isRunning ? '暫停' : '開始'}
-          </Button>
-          <Stack spacing={1}>
-            <Typography variant="h6" fontWeight="bold">
-              {subjectName || '未命名科目'}
+            {isRunning ? '暫停' : '開始'}
+          </LoadingButton>
+
+          {saveError || hideError ? (
+            <Typography color="error" variant="caption" align="center">
+              {saveError || hideError}
             </Typography>
-            <Typography color="text.secondary">專注時間：{formatTime(elapsedTime)}</Typography>
-            {saveError ? (
-              <Typography color="error" variant="caption">
-                {saveError}
-              </Typography>
-            ) : null}
-            {hideError ? (
-              <Typography color="error" variant="caption">
-                {hideError}
-              </Typography>
-            ) : null}
-          </Stack>
+          ) : null}
         </Stack>
       </CardContent>
     </Card>
