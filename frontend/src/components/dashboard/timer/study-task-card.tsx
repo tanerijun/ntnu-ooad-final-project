@@ -15,11 +15,11 @@ import { timerSessionsClient } from '@/lib/timer/client';
 
 interface StudyTaskCardProps {
   isRunning: boolean;
-  onRequestStart: (taskState: boolean) => void;
+  onRequestStart: (taskId: number, taskState: boolean) => void;
   taskId: number; // 必須有 taskId 才能更新正確的資料
   subjectName: string;
   initialDuration: number;
-  onTimeUpdate: (seconds: number) => void;
+  onTimeUpdate: (id: number, seconds: number) => void;
   onSaveSuccess?: () => void; // 可選，保存成功時通知父元件
 }
 
@@ -38,19 +38,21 @@ export function StudyTaskCard({
   // 新增隱藏任務的狀態
   const [hideError, setHideError] = useState<string | null>(null);
 
+  const lastSaveTimeRef = React.useRef<number>(Date.now());
+
   // 隱藏任務的處理函式
-  const handleHide = async () => {
+  const handleHide = useCallback(async () => {
     setHideError(null);
     const result = await timerSessionsClient.hideTask(subjectName);
     if (result.success) {
-      // 通知父元件刷新列表
       onSaveSuccess?.();
     } else {
       setHideError('隱藏失敗，請稍後再試');
     }
-  };
+  }, [subjectName, onSaveSuccess]);
+
   // 保存到資料庫
-  const saveDuration = useCallback(async () => {
+  const saveDuration = async () => {
     setIsSaving(true);
     setSaveError(null);
     try {
@@ -62,17 +64,16 @@ export function StudyTaskCard({
     } finally {
       setIsSaving(false);
     }
-  }, [taskId, elapsedTime, onSaveSuccess]);
+  };
 
   // 每秒累加計時
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
+    if (!isRunning) return;
 
-    if (isRunning) {
-      timer = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
-      }, 1000);
-    }
+    const timer = setInterval(() => {
+      setElapsedTime((prev) => prev + 1);
+    }, 1000);
+
     return () => {
       clearInterval(timer);
     };
@@ -80,30 +81,26 @@ export function StudyTaskCard({
 
   // 每30秒自動保存
   useEffect(() => {
-    logger.debug('計時器啟動', isRunning);
     if (!isRunning) return;
-    const autoSaveTimer = setInterval(() => {
+    const timeSinceLastSave = Date.now() - lastSaveTimeRef.current;
+    if (timeSinceLastSave >= 30000) {
+      lastSaveTimeRef.current = Date.now();
       void saveDuration();
-      logger.debug('自動保存計時');
-    }, 30000); // 30秒
-    return () => {
-      clearInterval(autoSaveTimer);
-    };
-  }, [isRunning]);
+    }
+  });
+
+  // 每次 elapsedTime 變動時通知外部
+  useEffect(() => {
+    onTimeUpdate(taskId, elapsedTime);
+  }, [elapsedTime, taskId, onTimeUpdate]);
 
   // 暫停時立即保存
   const handleToggle = async () => {
     if (isRunning) {
-      logger.debug('暫停計時');
       await saveDuration();
-      onRequestStart(false); // 這樣即可
+      onRequestStart(taskId, false);
     }
   };
-
-  // 每次 elapsedTime 變動時通知外部
-  useEffect(() => {
-    onTimeUpdate(elapsedTime);
-  }, [elapsedTime]);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -154,7 +151,7 @@ export function StudyTaskCard({
             color={isRunning ? 'warning' : 'success'}
             onClick={() => {
               if (!isRunning) {
-                onRequestStart(true);
+                onRequestStart(taskId, true);
               } else {
                 void handleToggle();
               }

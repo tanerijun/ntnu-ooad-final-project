@@ -47,8 +47,10 @@ export function TimerPage(): React.JSX.Element {
   }, [user]);
 
   useEffect(() => {
-    void fetchSessions();
-  }, [fetchSessions]);
+    if (user) {
+      void fetchSessions();
+    }
+  }, [user, fetchSessions]);
 
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -72,7 +74,15 @@ export function TimerPage(): React.JSX.Element {
 
   const totalDuration = Object.values(timeRecords).reduce((sum, seconds) => sum + seconds, 0);
 
-  if (error) return <div style={{ color: 'red' }}>{error}</div>;
+  const handleRequestStart = React.useCallback((taskId: number, taskState: boolean) => {
+    if (taskState) {
+      setActiveTaskId(taskId);
+    } else {
+      setActiveTaskId(null);
+    }
+  }, []);
+
+  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
     <Stack spacing={4} alignItems="center" paddingTop={4} sx={{ width: '100%' }}>
@@ -122,17 +132,9 @@ export function TimerPage(): React.JSX.Element {
             taskId={task.id}
             subjectName={task.subject}
             initialDuration={task.duration}
-            onTimeUpdate={(seconds) => {
-              handleTimeUpdate(task.id, seconds);
-            }}
+            onTimeUpdate={handleTimeUpdate}
             onSaveSuccess={fetchSessions}
-            onRequestStart={(taskState) => {
-              if (taskState) {
-                setActiveTaskId(task.id);
-              } else {
-                setActiveTaskId(null);
-              }
-            }}
+            onRequestStart={handleRequestStart}
             isRunning={activeTaskId === task.id}
           />
         ))}
