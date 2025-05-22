@@ -1,25 +1,20 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 
 import { config } from '@/config';
-import { AddTimerButton } from '@/components/dashboard/timer/add-timer-button';
+import { ShowDate } from '@/components/dashboard/timer/show-date';
+import { TimerPage } from '@/components/dashboard/timer/timer-page';
 
 export const metadata = { title: `Timer | ${config.site.name}` } satisfies Metadata;
 
-export default function Page(): React.JSX.Element {
+export default function Page() {
   return (
-    <Stack spacing={3}>
-      <Stack direction="row" spacing={3}>
-        <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Timer</Typography>
-        </Stack>
-        <div>
-          <AddTimerButton />
-        </div>
-      </Stack>
-      <Typography variant="body1">TODO: implement timer related features</Typography>
+    <Stack spacing={4} alignItems="center" paddingTop={4}>
+      {/* 顯示今天日期 */}
+      <ShowDate />
+      {/* 讀書計時器頁面 */}
+      <TimerPage />
     </Stack>
   );
 }
