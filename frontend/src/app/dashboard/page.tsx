@@ -22,15 +22,12 @@ export default function Page(): React.JSX.Element {
 
   return (
     <Stack gap={3}>
-    <Typography variant="body1">TODO: Implement proper statistics259498494</Typography>
+    <Typography variant="body1">TODO: Implement proper statistics</Typography>
     <Grid container spacing={3}>
-      <Grid lg={6} sm={6} xs={12}>
-        <Budget diff={12} trend="up" sx={{ height: '100%' }} value="#NOTE COUNT" />
+      <Grid lg={3} sm={6} xs={12}>
+        <Budget diff={12} trend="up" sx={{ height: '100%' }} value="$24k" />
       </Grid>
       <Grid lg={3} sm={6} xs={12}>
-        <NoteCard diff={6} trend="down" sx={{ height: '70%' }} value="TEST" />
-      </Grid>
-      <Grid lg={6} sm={6} xs={12}>
         <TotalCustomers diff={16} trend="down" sx={{ height: '100%' }} value="1.6k" />
       </Grid>
       <Grid lg={3} sm={6} xs={12}>
