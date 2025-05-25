@@ -7,12 +7,14 @@ import { Timer } from '@phosphor-icons/react/dist/ssr/Timer';
 import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { XSquare } from '@phosphor-icons/react/dist/ssr/XSquare';
+import { Bookmarks as BookMarksIcon } from '@phosphor-icons/react/dist/ssr/Bookmarks';
 
 export const navIcons = {
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
   'plugs-connected': PlugsConnectedIcon,
   'x-square': XSquare,
+  'book-mark': BookMarksIcon,
   user: UserIcon,
   users: UsersIcon,
   notes: Note,

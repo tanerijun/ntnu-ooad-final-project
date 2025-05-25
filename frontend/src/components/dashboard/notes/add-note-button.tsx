@@ -7,11 +7,15 @@ import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
 import { notesClient } from '@/lib/notes/client';
 
-export function AddNoteButton(): React.JSX.Element {
-  const router = useRouter();
+interface AddNoteButtonProps {
+  defaultTag?: string;
+}
 
+export function AddNoteButton({ defaultTag }: AddNoteButtonProps): React.JSX.Element {
+  const router = useRouter();
   const handleAdd = async () => {
-    const note = await notesClient.create();
+    // const note = await notesClient.create();
+    const note = await notesClient.create(defaultTag ? [defaultTag] : []);
     if (note) {
       router.push(`/dashboard/notes/${note.id}/edit`);
     } else {

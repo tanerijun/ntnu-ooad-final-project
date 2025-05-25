@@ -7,4 +7,5 @@ export const navItems = [
   { key: 'timer', title: 'Timer', href: paths.dashboard.timer, icon: 'timer' },
   { key: 'settings', title: 'Settings', href: paths.dashboard.settings, icon: 'gear-six' },
   { key: 'account', title: 'Account', href: paths.dashboard.account, icon: 'user' },
+  { key: 'topic', title: 'Topic', href: paths.dashboard.topic, icon: 'book-mark' },
 ] satisfies NavItemConfig[];
