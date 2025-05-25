@@ -3,16 +3,8 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import AddIcon from '@mui/icons-material/Add';
-import {
-  Box,
-  IconButton,
-  Stack,
-  TextField,
-  Typography,
-  Button,
-} from '@mui/material';
-import { Bookmarks } from '@phosphor-icons/react';
+import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { Bookmarks, Plus } from '@phosphor-icons/react';
 
 // For persistence in-memory (optional: replace with backend/localStorage later)
 const localTopicKey = '__local_topics__';
@@ -75,35 +67,33 @@ export default function TopicNavItem(): React.JSX.Element {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Bookmarks
-              fontSize="var(--icon-fontSize-md)"
-              weight="regular"
-              fill="var(--NavItem-icon-color)"
-            />
-            <Typography
-              component="span"
-              sx={{ fontSize: '0.875rem', fontWeight: 500, lineHeight: '28px' }}
-            >
+            <Bookmarks fontSize="var(--icon-fontSize-md)" weight="regular" fill="var(--NavItem-icon-color)" />
+            <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, lineHeight: '28px' }}>
               Topic
             </Typography>
           </Box>
           <IconButton
             size="small"
-            onClick={() => { setAdding((v) => !v); }}
+            onClick={() => {
+              setAdding((v) => !v);
+            }}
             sx={{ color: 'var(--NavItem-icon-color)' }}
           >
-            <AddIcon fontSize="small" />
+            <Plus fontSize="small" />
           </IconButton>
         </Box>
 
         {/* Text input when adding */}
-        {adding ? <Box sx={{ px: 2 }}>
+        {adding ? (
+          <Box sx={{ px: 2 }}>
             <TextField
               size="small"
               variant="outlined"
               placeholder="Enter topic name"
               value={newTopicName}
-              onChange={(e) => { setNewTopicName(e.target.value); }}
+              onChange={(e) => {
+                setNewTopicName(e.target.value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleCreateTopic();
                 if (e.key === 'Escape') {
@@ -122,7 +112,8 @@ export default function TopicNavItem(): React.JSX.Element {
                 },
               }}
             />
-          </Box> : null}
+          </Box>
+        ) : null}
 
         {/* List of topics */}
         <Stack component="ul" spacing={0.5} sx={{ listStyle: 'none', pl: 3, pt: 1 }}>
@@ -130,7 +121,9 @@ export default function TopicNavItem(): React.JSX.Element {
             <li key={slug}>
               <Button
                 variant="text"
-                onClick={() => { handleTopicClick(slug); }}
+                onClick={() => {
+                  handleTopicClick(slug);
+                }}
                 sx={{
                   justifyContent: 'flex-start',
                   color: 'var(--NavItem-color)',
