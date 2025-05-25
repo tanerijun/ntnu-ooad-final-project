@@ -7,9 +7,9 @@ import dayjs from 'dayjs';
 
 import { config } from '@/config';
 // import { Budget } from '@/components/dashboard/overview/budget';
-import { NoteCard } from '@/components/dashboard/overview/note-card';
+// import { NoteCard } from '@/components/dashboard/overview/note-card';
 import { NoteCardCount } from '@/components/dashboard/overview/note-card-count';
-import { TimerCard } from '@/components/dashboard/overview/timer-card'
+// import { TimerCard } from '@/components/dashboard/overview/timer-card'
 import { TimerCardCount } from '@/components/dashboard/overview/timer-card-count';
 import { LatestOrders } from '@/components/dashboard/overview/latest-orders';
 import { LatestProducts } from '@/components/dashboard/overview/latest-products';
@@ -30,15 +30,15 @@ export default function Page(): React.JSX.Element {
       {/* <Grid lg={3} sm={6} xs={12}>
         <Budget diff={12} trend="up" sx={{ height: '100%' }} value="$24k" />
       </Grid> */}
-      <Grid lg={3} sm={6} xs={12}>
+      {/* <Grid lg={3} sm={6} xs={12}>
         <NoteCard diff={12} trend="up" sx={{ height: '100%',backgroundColor: '#e3f2ff'  }} value="$24k" />
-      </Grid>
+      </Grid> */}
       <Grid lg={3} sm={6} xs={12}>
         <NoteCardCount />
       </Grid>
-       <Grid lg={3} sm={6} xs={12}>
+       {/* <Grid lg={3} sm={6} xs={12}>
         <TimerCard diff={16} trend="down" sx={{ height: '100%' ,backgroundColor: '#e3f2ff' }} value="1.6k" />
-      </Grid>
+      </Grid> */}
       <Grid lg={3} sm={6} xs={12}>
         <TimerCardCount  />
       </Grid>
