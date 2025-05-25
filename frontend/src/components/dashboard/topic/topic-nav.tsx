@@ -51,25 +51,40 @@ export default function TopicNavItem(): React.JSX.Element {
   };
 
   return (
-    <li>
-      <Stack direction="column" spacing={0.5}>
+    <li style={{ width: '100%' }}>
+      <Stack
+        direction="column"
+        spacing={0.5}
+        sx={{
+          width: '100%',
+          bgcolor: 'rgba(255, 255, 255, 0.05)',
+          borderRadius: 2,
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          overflow: 'hidden',
+        }}
+      >
         {/* Header with Add button */}
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '6px 16px',
-            borderRadius: 1,
+            padding: '12px 16px',
+            bgcolor: 'rgba(255, 255, 255, 0.08)',
             color: 'var(--NavItem-color)',
             cursor: 'pointer',
-            '&:hover': { bgcolor: 'var(--NavItem-hover-background)' },
+            width: '100%',
+            '&:hover': {
+              bgcolor: 'rgba(255, 255, 255, 0.12)',
+              transform: 'translateY(-1px)',
+              transition: 'all 0.2s ease',
+            },
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Bookmarks fontSize="var(--icon-fontSize-md)" weight="regular" fill="var(--NavItem-icon-color)" />
-            <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, lineHeight: '28px' }}>
-              Topic
+            <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 600, lineHeight: '28px' }}>
+              Topics
             </Typography>
           </Box>
           <IconButton
@@ -77,7 +92,11 @@ export default function TopicNavItem(): React.JSX.Element {
             onClick={() => {
               setAdding((v) => !v);
             }}
-            sx={{ color: 'var(--NavItem-icon-color)' }}
+            sx={{
+              color: 'var(--NavItem-icon-color)',
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
+            }}
           >
             <Plus fontSize="small" />
           </IconButton>
@@ -85,7 +104,7 @@ export default function TopicNavItem(): React.JSX.Element {
 
         {/* Text input when adding */}
         {adding ? (
-          <Box sx={{ px: 2 }}>
+          <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.03)' }}>
             <TextField
               size="small"
               variant="outlined"
@@ -102,12 +121,21 @@ export default function TopicNavItem(): React.JSX.Element {
                 }
               }}
               fullWidth
+              autoFocus
               InputProps={{
                 sx: {
                   color: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
                   '& input::placeholder': {
-                    color: 'rgba(255,255,255,0.5)',
+                    color: 'rgba(255,255,255,0.6)',
+                  },
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.15)',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: 'rgba(255,255,255,0.15)',
+                    borderColor: 'rgba(255,255,255,0.3)',
                   },
                 },
               }}
@@ -116,28 +144,41 @@ export default function TopicNavItem(): React.JSX.Element {
         ) : null}
 
         {/* List of topics */}
-        <Stack component="ul" spacing={0.5} sx={{ listStyle: 'none', pl: 3, pt: 1 }}>
-          {topics.map((slug) => (
-            <li key={slug}>
-              <Button
-                variant="text"
-                onClick={() => {
-                  handleTopicClick(slug);
-                }}
-                sx={{
-                  justifyContent: 'flex-start',
-                  color: 'var(--NavItem-color)',
-                  fontSize: '0.8rem',
-                  textTransform: 'none',
-                  minWidth: 0,
-                  px: 1,
-                }}
-              >
-                {decodeURIComponent(slug)}
-              </Button>
-            </li>
-          ))}
-        </Stack>
+        {topics.length > 0 && (
+          <Stack component="ul" spacing={0.5} sx={{ listStyle: 'none', p: 1, m: 0, width: '100%' }}>
+            {topics.map((slug) => (
+              <li key={slug} style={{ width: '100%' }}>
+                <Button
+                  variant="text"
+                  onClick={() => {
+                    handleTopicClick(slug);
+                  }}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    width: '100%',
+                    px: 2,
+                    py: 1,
+                    borderRadius: 1,
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                      color: 'white',
+                      transform: 'translateX(4px)',
+                      transition: 'all 0.2s ease',
+                    },
+                  }}
+                >
+                  {decodeURIComponent(slug)}
+                </Button>
+              </li>
+            ))}
+          </Stack>
+        )}
       </Stack>
     </li>
   );

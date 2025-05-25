@@ -103,6 +103,7 @@ module.exports = {
     'no-alert': 'off', // personal style
     'react/jsx-fragments': 'off', // personal style
     'react/prop-types': 'off', // TypeScript is used for type checking
+    'jsx-a11y/no-autofocus': 'off',
 
     '@next/next/no-img-element': 'off', // Temporary disabled
   },

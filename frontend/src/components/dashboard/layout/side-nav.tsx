@@ -12,13 +12,12 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { Logo } from '@/components/core/logo';
+import TopicNavItem from '@/components/dashboard/topic/topic-nav';
 
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
 
-import TopicNavItem from "@/components/dashboard/topic/topic-nav";
-
-export  function SideNav(): React.JSX.Element {
+export function SideNav(): React.JSX.Element {
   const pathname = usePathname();
 
   return (
@@ -55,29 +54,13 @@ export  function SideNav(): React.JSX.Element {
         </Box>
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Stack spacing={2} sx={{ p: '12px' }}>
-        <div>
-          <Typography color="var(--mui-palette-neutral-100)" variant="subtitle2">
-            TODO: show notes here
-          </Typography>
-        </div>
-      </Stack>
-      <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
         {/* Primary nav items */}
         <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
           {renderNavItems({ pathname, items: navItems })}
         </Stack>
 
-        {/* Topic section */}
         <Divider sx={{ my: 2, borderColor: 'var(--mui-palette-neutral-700)' }} />
-        <Typography
-          variant="subtitle2"
-          color="var(--mui-palette-neutral-100)"
-          sx={{ px: '12px', pb: 1 }}
-        >
-          Topics
-        </Typography>
         <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
           <TopicNavItem />
         </Stack>
@@ -162,4 +145,3 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
     </li>
   );
 }
-
