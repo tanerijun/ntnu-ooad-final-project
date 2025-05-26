@@ -13,8 +13,8 @@ export function ShowDate(): React.JSX.Element {
   });
 
   return (
-    <Box textAlign="center" mt={-5}>
-      <Typography variant="h3" component="div" style={{ color: 'black' }}>
+    <Box textAlign="center">
+      <Typography variant="h5" component="div" color="text.primary">
         {currentDate}
       </Typography>
     </Box>

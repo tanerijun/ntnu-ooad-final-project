@@ -85,45 +85,31 @@ export function TimerPage(): React.JSX.Element {
   if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <Stack spacing={4} alignItems="center" paddingTop={4} sx={{ width: '100%' }}>
-      <Box
+    <Stack spacing={3}>
+      <Card
         sx={{
-          width: '100%',
-          maxWidth: 800,
-          px: 2,
-          mb: 2,
+          p: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
-        <Card
-          elevation={0}
-          sx={{
-            bgcolor: 'transparent',
-            p: 2,
-            borderRadius: 2,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle1" color="primary.dark" fontWeight="medium">
-              今日累積讀書時間
-            </Typography>
-            <Typography variant="h4" fontWeight="bold" color="primary.dark" sx={{ fontFamily: 'monospace' }}>
-              {Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, '0')}
-            </Typography>
-          </Stack>
-          <AddTimerButton onSuccess={fetchSessions} />
-        </Card>
-      </Box>
+        <Stack spacing={0.5}>
+          <Typography variant="subtitle1" color="text.secondary">
+            今日累積讀書時間
+          </Typography>
+          <Typography variant="h4" fontWeight="bold" sx={{ fontFamily: 'monospace' }}>
+            {Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, '0')}
+          </Typography>
+        </Stack>
+        <AddTimerButton onSuccess={fetchSessions} />
+      </Card>
+      
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
           gap: 3,
-          width: '100%',
-          maxWidth: 800,
-          px: 2,
         }}
       >
         {tasks.map((task) => (
