@@ -12,7 +12,7 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { Logo } from '@/components/core/logo';
-import TopicNavItem from '@/components/dashboard/topic/topic-nav';
+import TagNavItem from '@/components/dashboard/tag/tag-nav';
 
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
@@ -62,7 +62,7 @@ export function SideNav(): React.JSX.Element {
 
         <Divider sx={{ my: 2, borderColor: 'var(--mui-palette-neutral-700)' }} />
         <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
-          <TopicNavItem />
+          <TagNavItem />
         </Stack>
       </Box>
     </Box>

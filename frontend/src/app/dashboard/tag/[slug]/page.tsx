@@ -17,7 +17,7 @@ import {
 import { notesClient, type Note } from '@/lib/notes/client';
 import { logger } from '@/lib/default-logger';
 
-export default function TopicNotesPage(): React.JSX.Element {
+export default function TagNotesPage(): React.JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -32,7 +32,7 @@ export default function TopicNotesPage(): React.JSX.Element {
           .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
         setNotes(filtered);
       })
-      .catch((err: unknown) => {logger.error('Failed to fetch topic notes', err)})
+      .catch((err: unknown) => {logger.error('Failed to fetch tag notes', err)})
       .finally(() => {setLoading(false)});
   }, [slug]);
 
@@ -51,7 +51,7 @@ export default function TopicNotesPage(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} alignItems="center">
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-          Topic: {decodeURIComponent(slug)}
+          Tag: {decodeURIComponent(slug)}
         </Typography>
         <Button variant="contained" onClick={handleAddNote}>
           Add Note
@@ -61,7 +61,7 @@ export default function TopicNotesPage(): React.JSX.Element {
       {loading ? (
         <CircularProgress />
       ) : notes.length === 0 ? (
-        <Typography variant="body1">No notes found for this topic.</Typography>
+        <Typography variant="body1">No notes found for this tag.</Typography>
       ) : (
         <Grid container spacing={2}>
           {notes.map((note) => (

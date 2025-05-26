@@ -7,47 +7,47 @@ import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/mate
 import { Bookmarks, Plus } from '@phosphor-icons/react';
 
 // For persistence in-memory (optional: replace with backend/localStorage later)
-const localTopicKey = '__local_topics__';
+const localTagKey = '__local_tags__';
 
-function loadTopics(): string[] {
+function loadTags(): string[] {
   try {
-    const stored = localStorage.getItem(localTopicKey);
+    const stored = localStorage.getItem(localTagKey);
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
   }
 }
 
-function saveTopics(topics: string[]) {
-  localStorage.setItem(localTopicKey, JSON.stringify(topics));
+function saveTags(tags: string[]) {
+  localStorage.setItem(localTagKey, JSON.stringify(tags));
 }
 
-export default function TopicNavItem(): React.JSX.Element {
+export default function TagNavItem(): React.JSX.Element {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
-  const [newTopicName, setNewTopicName] = useState('');
-  const [topics, setTopics] = useState<string[]>(loadTopics());
+  const [newTagName, setNewTagName] = useState('');
+  const [tags, setTags] = useState<string[]>(loadTags());
 
-  const handleCreateTopic = () => {
-    const trimmed = newTopicName.trim();
+  const handleCreateTag = () => {
+    const trimmed = newTagName.trim();
     if (trimmed) {
-      const topicSlug = encodeURIComponent(trimmed.toLowerCase().replace(/\s+/g, '-'));
+      const tagSlug = encodeURIComponent(trimmed.toLowerCase().replace(/\s+/g, '-'));
 
-      // Add new topic if not duplicate
-      if (!topics.includes(topicSlug)) {
-        const updated = [...topics, topicSlug];
-        setTopics(updated);
-        saveTopics(updated);
+      // Add new tag if not duplicate
+      if (!tags.includes(tagSlug)) {
+        const updated = [...tags, tagSlug];
+        setTags(updated);
+        saveTags(updated);
       }
 
-      setNewTopicName('');
+      setNewTagName('');
       setAdding(false);
-      router.push(`/dashboard/topic/${topicSlug}`);
+      router.push(`/dashboard/tag/${tagSlug}`);
     }
   };
 
-  const handleTopicClick = (slug: string) => {
-    router.push(`/dashboard/topic/${slug}`);
+  const handleTagClick = (slug: string) => {
+    router.push(`/dashboard/tag/${slug}`);
   };
 
   return (
@@ -84,7 +84,7 @@ export default function TopicNavItem(): React.JSX.Element {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Bookmarks fontSize="var(--icon-fontSize-md)" weight="regular" fill="var(--NavItem-icon-color)" />
             <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 600, lineHeight: '28px' }}>
-              Topics
+              Tags
             </Typography>
           </Box>
           <IconButton
@@ -108,15 +108,15 @@ export default function TopicNavItem(): React.JSX.Element {
             <TextField
               size="small"
               variant="outlined"
-              placeholder="Enter topic name"
-              value={newTopicName}
+              placeholder="Enter tag name"
+              value={newTagName}
               onChange={(e) => {
-                setNewTopicName(e.target.value);
+                setNewTagName(e.target.value);
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateTopic();
+                if (e.key === 'Enter') handleCreateTag();
                 if (e.key === 'Escape') {
-                  setNewTopicName('');
+                  setNewTagName('');
                   setAdding(false);
                 }
               }}
@@ -143,15 +143,15 @@ export default function TopicNavItem(): React.JSX.Element {
           </Box>
         ) : null}
 
-        {/* List of topics */}
-        {topics.length > 0 && (
+        {/* List of tags */}
+        {tags.length > 0 && (
           <Stack component="ul" spacing={0.5} sx={{ listStyle: 'none', p: 1, m: 0, width: '100%' }}>
-            {topics.map((slug) => (
+            {tags.map((slug) => (
               <li key={slug} style={{ width: '100%' }}>
                 <Button
                   variant="text"
                   onClick={() => {
-                    handleTopicClick(slug);
+                    handleTagClick(slug);
                   }}
                   sx={{
                     justifyContent: 'flex-start',
