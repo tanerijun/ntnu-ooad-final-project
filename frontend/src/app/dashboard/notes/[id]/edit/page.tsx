@@ -3,23 +3,24 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { 
-  Button, 
-  CircularProgress, 
-  Stack, 
-  Typography, 
-  TextField,
-  Chip,
-  Box,
+import {
   Autocomplete,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  IconButton,
   Paper,
-  IconButton
+  Stack,
+  TextField,
+  Typography,
 } from '@mui/material';
 import { ArrowLeft as ArrowLeftIcon } from '@phosphor-icons/react/dist/ssr/ArrowLeft';
 import { FloppyDisk as SaveIcon } from '@phosphor-icons/react/dist/ssr/FloppyDisk';
 import { Tag as TagIcon } from '@phosphor-icons/react/dist/ssr/Tag';
 
 import { notesClient, type Note } from '@/lib/notes/client';
+import { TagManager, useTagStorageSync, type StoredTag, type TagEventListener } from '@/lib/tags/storage';
 import TextEditor from '@/components/dashboard/notes/editor/text-editor';
 
 export default function EditNotePage(): React.JSX.Element {
@@ -34,6 +35,8 @@ export default function EditNotePage(): React.JSX.Element {
   const [tags, setTags] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState<string>('');
+  const { syncTags } = useTagStorageSync();
+  const tagManager = TagManager.getInstance();
 
   useEffect(() => {
     if (!id) return;
@@ -44,41 +47,41 @@ export default function EditNotePage(): React.JSX.Element {
         setNote(fetchedNote);
         setTitle(fetchedNote.title || '');
         setContent(fetchedNote.content);
-        setTags(fetchedNote.tags.map((tag) => {
-          return tag.name;
-        }));
+        setTags(
+          fetchedNote.tags.map((tag) => {
+            return tag.name;
+          })
+        );
       }
       setLoading(false);
     })();
   }, [id]);
 
   useEffect(() => {
-    // Load available tags from localStorage or API
-    const loadAvailableTags = () => {
-      try {
-        const stored = localStorage.getItem('__available_tags__');
-        return stored ? JSON.parse(stored) : [];
-      } catch {
-        return [];
-      }
+    setAvailableTags(tagManager.getAllTagNames());
+
+    const listener: TagEventListener = {
+      onTagsUpdated: (updatedTags: StoredTag[]) => {
+        setAvailableTags(updatedTags.map((tag) => tag.name));
+      },
     };
-    setAvailableTags(loadAvailableTags());
-  }, []);
+
+    tagManager.addListener(listener);
+
+    return () => {
+      tagManager.removeListener(listener);
+    };
+  }, [tagManager]);
 
   const handleSave = async () => {
     if (!note) return;
-    
+
     setSaving(true);
     try {
       const updatedNote = await notesClient.update(note.id, title || null, content, tags);
       if (updatedNote) {
-        // Update available tags in localStorage
-        const allTags = [...new Set([...availableTags, ...tags])];
-        localStorage.setItem('__available_tags__', JSON.stringify(allTags));
-        setAvailableTags(allTags);
-        
+        syncTags(tags);
         setNote(updatedNote);
-        // Show success feedback or redirect
         router.push('/dashboard/notes');
       } else {
         alert('Failed to save note.');
@@ -99,9 +102,11 @@ export default function EditNotePage(): React.JSX.Element {
   };
 
   const handleTagRemove = (tagToRemove: string) => {
-    setTags(tags.filter(tag => {
-      return tag !== tagToRemove;
-    }));
+    setTags(
+      tags.filter((tag) => {
+        return tag !== tagToRemove;
+      })
+    );
   };
 
   const handleBack = () => {
@@ -137,12 +142,7 @@ export default function EditNotePage(): React.JSX.Element {
         <Typography variant="h5" sx={{ flexGrow: 1 }}>
           Edit Note
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<SaveIcon />}
-          onClick={handleSave}
-          disabled={saving}
-        >
+        <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving}>
           {saving ? 'Saving...' : 'Save'}
         </Button>
       </Stack>
@@ -169,7 +169,7 @@ export default function EditNotePage(): React.JSX.Element {
               Tags
             </Typography>
           </Stack>
-          
+
           {/* Tag Input */}
           <Autocomplete
             multiple
@@ -181,22 +181,18 @@ export default function EditNotePage(): React.JSX.Element {
               setTagInput(newInputValue);
             }}
             onChange={(_, newValue) => {
-              const newTags = newValue.map(tag => {
-                return typeof tag === 'string' ? tag.trim().toLowerCase() : tag;
-              }).filter(tag => {
-                return tag.length > 0;
-              });
+              const newTags = newValue
+                .map((tag) => {
+                  return typeof tag === 'string' ? tag.trim().toLowerCase() : tag;
+                })
+                .filter((tag) => {
+                  return tag.length > 0;
+                });
               setTags([...new Set(newTags)]);
             }}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
-                <Chip
-                  variant="outlined"
-                  label={option}
-                  size="small"
-                  {...getTagProps({ index })}
-                  key={option}
-                />
+                <Chip variant="outlined" label={option} size="small" {...getTagProps({ index })} key={option} />
               ))
             }
             renderInput={(params) => (
@@ -255,12 +251,7 @@ export default function EditNotePage(): React.JSX.Element {
         <Button variant="outlined" onClick={handleBack}>
           Cancel
         </Button>
-        <Button
-          variant="contained"
-          startIcon={<SaveIcon />}
-          onClick={handleSave}
-          disabled={saving}
-        >
+        <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving}>
           {saving ? 'Saving...' : 'Save Changes'}
         </Button>
       </Stack>

@@ -6,43 +6,45 @@ import { useRouter } from 'next/navigation';
 import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { Bookmarks, Plus } from '@phosphor-icons/react';
 
-// For persistence in-memory (optional: replace with backend/localStorage later)
-const localTagKey = '__local_tags__';
-
-function loadTags(): string[] {
-  try {
-    const stored = localStorage.getItem(localTagKey);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveTags(tags: string[]) {
-  localStorage.setItem(localTagKey, JSON.stringify(tags));
-}
+import { 
+  TagManager,
+  type TagEventListener,
+  type StoredTag
+} from '@/lib/tags/storage';
 
 export default function TagNavItem(): React.JSX.Element {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [newTagName, setNewTagName] = useState('');
-  const [tags, setTags] = useState<string[]>(loadTags());
+  const [tags, setTags] = useState<string[]>([]);
+
+  // Initialize tag manager and listen for tag updates from other components
+  React.useEffect(() => {
+    const tagManager = TagManager.getInstance();
+    setTags(tagManager.getAllTagSlugs());
+    
+    const listener: TagEventListener = {
+      onTagsUpdated: (updatedTags: StoredTag[]) => {
+        setTags(updatedTags.map(tag => tag.slug));
+      }
+    };
+    
+    tagManager.addListener(listener);
+    
+    return () => {
+      tagManager.removeListener(listener);
+    };
+  }, []);
 
   const handleCreateTag = () => {
     const trimmed = newTagName.trim();
     if (trimmed) {
-      const tagSlug = encodeURIComponent(trimmed.toLowerCase().replace(/\s+/g, '-'));
-
-      // Add new tag if not duplicate
-      if (!tags.includes(tagSlug)) {
-        const updated = [...tags, tagSlug];
-        setTags(updated);
-        saveTags(updated);
-      }
+      const tagManager = TagManager.getInstance();
+      const storedTag = tagManager.addTag(trimmed);
 
       setNewTagName('');
       setAdding(false);
-      router.push(`/dashboard/tag/${tagSlug}`);
+      router.push(`/dashboard/tag/${storedTag.slug}`);
     }
   };
 
@@ -173,7 +175,7 @@ export default function TagNavItem(): React.JSX.Element {
                     },
                   }}
                 >
-                  {decodeURIComponent(slug)}
+                  {TagManager.getInstance().slugToName(slug)}
                 </Button>
               </li>
             ))}
