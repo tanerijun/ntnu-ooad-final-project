@@ -6,11 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { Bookmarks, Plus } from '@phosphor-icons/react';
 
-import { 
-  TagManager,
-  type TagEventListener,
-  type StoredTag
-} from '@/lib/tags/storage';
+import { TagManager, type StoredTag, type TagEventListener } from '@/lib/tags/storage';
 
 export default function TagNavItem(): React.JSX.Element {
   const router = useRouter();
@@ -22,15 +18,15 @@ export default function TagNavItem(): React.JSX.Element {
   React.useEffect(() => {
     const tagManager = TagManager.getInstance();
     setTags(tagManager.getAllTagSlugs());
-    
+
     const listener: TagEventListener = {
       onTagsUpdated: (updatedTags: StoredTag[]) => {
-        setTags(updatedTags.map(tag => tag.slug));
-      }
+        setTags(updatedTags.map((tag) => tag.slug));
+      },
     };
-    
+
     tagManager.addListener(listener);
-    
+
     return () => {
       tagManager.removeListener(listener);
     };
@@ -59,8 +55,8 @@ export default function TagNavItem(): React.JSX.Element {
         spacing={0.5}
         sx={{
           width: '100%',
-          bgcolor: 'rgba(255, 255, 255, 0.05)',
-          borderRadius: 2,
+          bgcolor: 'transparent',
+          borderRadius: 1,
           border: '1px solid rgba(255, 255, 255, 0.1)',
           overflow: 'hidden',
         }}
@@ -72,7 +68,7 @@ export default function TagNavItem(): React.JSX.Element {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '12px 16px',
-            bgcolor: 'rgba(255, 255, 255, 0.08)',
+            bgcolor: 'rgba(255, 255, 255, 0.06)',
             color: 'var(--NavItem-color)',
             cursor: 'pointer',
             width: '100%',
@@ -157,7 +153,7 @@ export default function TagNavItem(): React.JSX.Element {
                   }}
                   sx={{
                     justifyContent: 'flex-start',
-                    color: 'rgba(255, 255, 255, 0.8)',
+                    color: 'rgba(255, 255, 255, 0.6)',
                     fontSize: '0.8rem',
                     fontWeight: 500,
                     textTransform: 'none',
@@ -168,7 +164,7 @@ export default function TagNavItem(): React.JSX.Element {
                     bgcolor: 'rgba(255, 255, 255, 0.03)',
                     border: '1px solid rgba(255, 255, 255, 0.05)',
                     '&:hover': {
-                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                      bgcolor: 'rgba(255, 255, 255, 0.08)',
                       color: 'white',
                       transform: 'translateX(4px)',
                       transition: 'all 0.2s ease',
