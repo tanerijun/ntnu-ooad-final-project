@@ -31,9 +31,12 @@ import {
 } from 'lexical';
 
 import { logger } from '@/lib/default-logger';
+import { imageClient, type ImageCompressOptions } from '@/lib/image-upload';
 
 import AutoLinkPlugin from './AutoLinkPlugin';
 import EditorTheme from './EditorTheme';
+import { ImageNode } from './ImageNode';
+import ImageUploadPlugin from './ImageUploadPlugin';
 import KeyboardShortcutsPlugin from './KeyboardShortcutsPlugin';
 import ToolbarPlugin from './ToolbarPlugin';
 
@@ -81,6 +84,7 @@ const exportMap: DOMExportOutputMap = new Map<
   [ListNode, cleanExportDOM],
   [ListItemNode, cleanExportDOM],
   [LinkNode, cleanExportDOM],
+  [ImageNode, cleanExportDOM],
 ]);
 
 const constructImportMap = (): DOMConversionMap => {
@@ -93,6 +97,7 @@ const constructImportMap = (): DOMConversionMap => {
     QuoteNode.importDOM?.() || {},
     ListNode.importDOM?.() || {},
     ListItemNode.importDOM?.() || {},
+    ImageNode.importDOM?.() || {},
   ];
 
   nodeMaps.forEach((nodeMap) => {
@@ -136,7 +141,7 @@ export default function TextEditor({
   const editorConfig: InitialConfigType = {
     namespace: 'ReactNoteEditor',
     theme: EditorTheme,
-    nodes: [ParagraphNode, TextNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode],
+    nodes: [ParagraphNode, TextNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, ImageNode],
     onError(error: Error) {
       logger.error('Lexical Error:', error);
     },
@@ -172,6 +177,31 @@ export default function TextEditor({
           <TabIndentationPlugin />
           <AutoLinkPlugin />
           <KeyboardShortcutsPlugin />
+          <ImageUploadPlugin
+            onUpload={async (file: File) => {
+              const compressOptions: ImageCompressOptions = {
+                maxWidth: 1600,
+                maxHeight: 1200,
+                quality: 0.85,
+                format: file.type === 'image/png' ? 'png' : 'jpeg',
+              };
+
+              const result = await imageClient.upload(file, compressOptions);
+              if (result.error || !result.data) {
+                throw new Error(result.error || 'Failed to upload image');
+              }
+
+              logger.debug('Image uploaded successfully:', {
+                filename: result.data.filename,
+                size: imageClient.formatFileSize(result.data.size),
+              });
+
+              return {
+                url: result.data.url,
+                filename: result.data.filename,
+              };
+            }}
+          />
           <InitialContentPlugin initialContent={initialContent} />
           <OnChangePlugin
             onChange={(editorState) => {

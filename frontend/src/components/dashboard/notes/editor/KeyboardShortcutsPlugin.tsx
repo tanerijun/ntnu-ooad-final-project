@@ -43,6 +43,16 @@ export default function KeyboardShortcutsPlugin(): null {
             }
           }
 
+          // Image upload: Ctrl/Cmd + Shift + I
+          if ((ctrlKey || metaKey) && shiftKey && !altKey && code === 'KeyI') {
+            event.preventDefault();
+            const windowWithUpload = window as unknown as { __imageUploadTrigger?: () => void };
+            if (windowWithUpload.__imageUploadTrigger) {
+              windowWithUpload.__imageUploadTrigger();
+            }
+            return true;
+          }
+
           // Shift + Ctrl/Cmd shortcuts
           if ((ctrlKey || metaKey) && shiftKey && !altKey) {
             switch (code) {

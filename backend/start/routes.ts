@@ -14,6 +14,7 @@ const AuthController = () => import('#controllers/auth_controller')
 const TimerSessionsController = () => import('#controllers/timer_sessions_controller')
 const UserTaskController = () => import('#controllers/user_task_controller')
 const NotesController = () => import('#controllers/notes_controller')
+const UploadController = () => import('#controllers/upload_controller')
 
 router.post('register', [AuthController, 'register']).as('auth.register')
 router.post('login', [AuthController, 'login']).as('auth.login')
@@ -45,6 +46,9 @@ router
     router.get('notes/:id', [NotesController, 'show']).as('notes.show')
     router.put('notes/:id', [NotesController, 'update']).as('notes.update')
     router.delete('notes/:id', [NotesController, 'destroy']).as('notes.destroy')
+
+    router.post('upload/image', [UploadController, 'uploadImage']).as('upload.image')
+    router.delete('upload/image', [UploadController, 'deleteImage']).as('upload.delete')
   })
   .use(middleware.auth())
 

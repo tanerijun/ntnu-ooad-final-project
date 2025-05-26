@@ -680,6 +680,10 @@ i.help {
   background-image: url('/icons/question-circle.svg');
 }
 
+i.image {
+  background-image: url('/icons/image.svg');
+}
+
 .help-container {
   position: relative;
 }
@@ -734,4 +738,100 @@ i.help {
   font-family: monospace;
   color: #374151;
   margin-right: 8px;
+}
+
+/* Image styles */
+.editor-image {
+  display: inline-block;
+  position: relative;
+  margin: 8px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.editor-image img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editor-image img:hover {
+  transform: scale(1.02);
+}
+
+.editor-image img.focused {
+  outline: 2px solid rgb(59, 130, 246);
+  outline-offset: 2px;
+}
+
+.editor-image img.draggable {
+  cursor: grab;
+}
+
+.editor-image img.draggable:active {
+  cursor: grabbing;
+}
+
+.editor-image .image-resizer {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 10px;
+  height: 10px;
+  background-color: rgb(59, 130, 246);
+  border-radius: 2px;
+  cursor: nw-resize;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.editor-image:hover .image-resizer {
+  opacity: 0.8;
+}
+
+.editor-image .image-resizer:hover {
+  opacity: 1;
+}
+
+.editor-image.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.editor-image.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid rgb(59, 130, 246);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive image handling */
+@media (max-width: 768px) {
+  .editor-image {
+    margin: 6px 0;
+  }
+
+  .editor-image img {
+    border-radius: 6px;
+  }
 }

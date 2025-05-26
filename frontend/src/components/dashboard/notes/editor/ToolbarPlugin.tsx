@@ -232,6 +232,21 @@ export default function ToolbarPlugin() {
         <i className="format numbered-list" />
       </button>
       <Divider />
+      <button
+        type="button"
+        onClick={() => {
+          const windowWithUpload = window as unknown as { __imageUploadTrigger?: () => void };
+          if (windowWithUpload.__imageUploadTrigger) {
+            windowWithUpload.__imageUploadTrigger();
+          }
+        }}
+        className="toolbar-item spaced"
+        aria-label="Insert Image"
+        title="Insert Image"
+      >
+        <i className="format image" />
+      </button>
+      <Divider />
       <div className="help-container" ref={helpRef}>
         <button
           type="button"
@@ -262,6 +277,7 @@ export default function ToolbarPlugin() {
               <div className="shortcut-group">
                 <div><kbd>Ctrl/Cmd + Shift + 7</kbd> Numbered list</div>
                 <div><kbd>Ctrl/Cmd + Shift + 8</kbd> Bullet list</div>
+                <div><kbd>Ctrl/Cmd + Shift + I</kbd> Insert image</div>
               </div>
             </div>
           </div>
