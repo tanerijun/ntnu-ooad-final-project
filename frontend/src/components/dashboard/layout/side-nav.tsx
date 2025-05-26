@@ -46,6 +46,7 @@ export function SideNav(): React.JSX.Element {
         width: 'var(--SideNav-width)',
         zIndex: 'var(--SideNav-zIndex)',
         '&::-webkit-scrollbar': { display: 'none' },
+        overflowY: 'auto',
       }}
     >
       <Stack spacing={2} sx={{ p: 3 }}>
