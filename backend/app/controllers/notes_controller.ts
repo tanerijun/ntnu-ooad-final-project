@@ -15,10 +15,11 @@ export default class NotesController {
   async store({ request, auth }: HttpContext) {
     await auth.check()
 
+    const title = request.input('title') || null
     const content = request.input('content') || ''
     const tagNames: string[] = request.input('tags') || []
 
-    const note = await Note.create({ content, userId: auth.user!.id })
+    const note = await Note.create({ title, content, userId: auth.user!.id })
 
     if (tagNames.length > 0) {
       const tagIds = await this.findOrCreateTags(tagNames)
@@ -50,8 +51,13 @@ export default class NotesController {
       throw new Error('Unauthorized')
     }
 
+    const title = request.input('title')
     const content = request.input('content')
     const tagNames: string[] = request.input('tags') || []
+
+    if (typeof title === 'string' || title === null) {
+      note.title = title
+    }
 
     if (typeof content === 'string') {
       note.content = content

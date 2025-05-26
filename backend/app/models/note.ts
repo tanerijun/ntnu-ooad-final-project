@@ -14,6 +14,9 @@ export default class Note extends BaseModel {
   declare userId: number
 
   @column()
+  declare title: string | null
+
+  @column()
   declare content: string
 
   @column.dateTime({ autoCreate: true })
