@@ -7,7 +7,10 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { Check as CheckIcon } from '@phosphor-icons/react/dist/ssr/Check';
+import { PencilSimple as EditIcon } from '@phosphor-icons/react/dist/ssr/PencilSimple';
 import { X as XIcon } from '@phosphor-icons/react/dist/ssr/X';
 
 import { logger } from '@/lib/default-logger';
@@ -37,6 +40,12 @@ export function StudyTaskCard({
   const [saveError, setSaveError] = useState<string | null>(null);
   // 新增隱藏任務的狀態
   const [hideError, setHideError] = useState<string | null>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(subjectName);
+
+  useEffect(() => {
+    setEditedTitle(subjectName);
+  }, [subjectName]);
 
   const lastSaveTimeRef = React.useRef<number>(Date.now());
 
@@ -50,6 +59,46 @@ export function StudyTaskCard({
       setHideError('隱藏失敗，請稍後再試');
     }
   }, [subjectName, onSaveSuccess]);
+
+  const handleStartEditTitle = () => {
+    setIsEditingTitle(true);
+    setEditedTitle(subjectName);
+  };
+
+  const handleSaveTitle = async () => {
+    const trimmedTitle = editedTitle.trim();
+    if (trimmedTitle === subjectName) {
+      setIsEditingTitle(false);
+      return;
+    }
+
+    if (!trimmedTitle) {
+      setSaveError('標題不能為空');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const result = await timerSessionsClient.update(taskId, { subject: trimmedTitle });
+
+      if (result) {
+        setIsEditingTitle(false);
+        onSaveSuccess?.();
+      } else {
+        setSaveError('更新失敗，請稍後再試');
+      }
+    } catch (err) {
+      setSaveError('更新標題失敗，請確保此科目名稱未被使用');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEditTitle = () => {
+    setIsEditingTitle(false);
+    setEditedTitle(subjectName);
+  };
 
   // 保存到資料庫
   const saveDuration = async () => {
@@ -124,14 +173,58 @@ export function StudyTaskCard({
       }}
     >
       <CardContent>
-        {/* 右上角叉叉 */}
-        <IconButton aria-label="隱藏" onClick={handleHide} sx={{ position: 'absolute', top: 8, right: 8 }} size="small">
-          <XIcon />
-        </IconButton>
+        <Stack direction="row" spacing={0.5} sx={{ position: 'absolute', top: 8, right: 8 }}>
+          {!isEditingTitle && (
+            <IconButton
+              aria-label="編輯標題"
+              onClick={() => {
+                handleStartEditTitle();
+              }}
+              size="small"
+            >
+              <EditIcon />
+            </IconButton>
+          )}
+          <IconButton aria-label="隱藏" onClick={handleHide} size="small">
+            <XIcon />
+          </IconButton>
+        </Stack>
+
         <Stack spacing={2}>
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
-            {subjectName || '未命名科目'}
-          </Typography>
+          {isEditingTitle ? (
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ pr: 6 }}>
+              <TextField
+                value={editedTitle}
+                onChange={(e) => {
+                  setEditedTitle(e.target.value);
+                }}
+                variant="outlined"
+                size="small"
+                fullWidth
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    void handleSaveTitle();
+                  } else if (e.key === 'Escape') {
+                    handleCancelEditTitle();
+                  }
+                }}
+              />
+              <IconButton
+                onClick={() => {
+                  void handleSaveTitle();
+                }}
+                size="small"
+                disabled={isSaving}
+              >
+                <CheckIcon />
+              </IconButton>
+            </Stack>
+          ) : (
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 1, pr: 6 }}>
+              {subjectName || '未命名科目'}
+            </Typography>
+          )}
 
           <Typography
             variant="h4"

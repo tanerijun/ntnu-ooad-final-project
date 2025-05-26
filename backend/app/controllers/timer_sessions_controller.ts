@@ -1,5 +1,6 @@
+import TimerSession from '#models/timer_session'
+import UserTaskSetting from '#models/user_task'
 import type { HttpContext } from '@adonisjs/core/http'
-import TimerSession from '#models/timer_session' // 假設已建立 TimerSession 模型
 
 export default class TimerSessionsController {
   public async index({ request, response }: HttpContext) {
@@ -62,12 +63,72 @@ export default class TimerSessionsController {
   }
   public async update({ params, request, response }: HttpContext) {
     const { id } = params
-    const { duration } = request.only(['duration'])
+    const data = request.only(['duration', 'subject'])
 
     try {
       const session = await TimerSession.findOrFail(id)
-      session.duration = duration
+      const oldSubject = session.subject
+
+      // 驗證新科目名稱是否已存在（排除當前記錄）
+      if (data.subject !== undefined && data.subject !== oldSubject) {
+        const existingSession = await TimerSession.query()
+          .where('user_id', session.user_id)
+          .where('date', session.date)
+          .where('subject', data.subject)
+          .where('id', '!=', id)
+          .first()
+
+        if (existingSession) {
+          return response.status(400).json({
+            error: '此科目名稱已存在，請使用其他名稱',
+          })
+        }
+      }
+
+      if (data.duration !== undefined) {
+        session.duration = data.duration
+      }
+
+      if (data.subject !== undefined) {
+        session.subject = data.subject
+      }
+
       await session.save()
+
+      // 如果科目名稱有變更，需要更新 UserTaskSetting
+      if (data.subject !== undefined && data.subject !== oldSubject) {
+        // 查找舊的 UserTaskSetting
+        const oldSetting = await UserTaskSetting.query()
+          .where('user_id', session.user_id)
+          .where('subject', oldSubject)
+          .first()
+
+        if (oldSetting) {
+          // 檢查新科目名稱是否已存在設定
+          const existingNewSetting = await UserTaskSetting.query()
+            .where('user_id', session.user_id)
+            .where('subject', data.subject)
+            .first()
+
+          if (existingNewSetting) {
+            // 如果新科目名稱已存在，確保它是可見的，然後刪除舊設定
+            existingNewSetting.visible = true
+            await existingNewSetting.save()
+            await oldSetting.delete()
+          } else {
+            // 如果新科目名稱不存在，更新舊設定的科目名稱
+            oldSetting.subject = data.subject
+            await oldSetting.save()
+          }
+        } else {
+          // 如果找不到舊設定，為新科目創建設定
+          await UserTaskSetting.create({
+            user_id: session.user_id,
+            subject: data.subject,
+            visible: true,
+          })
+        }
+      }
 
       return response.json(session)
     } catch (error) {

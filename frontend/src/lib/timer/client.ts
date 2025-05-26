@@ -1,4 +1,3 @@
-// src/lib/timer/client.ts
 'use client';
 
 import { apiClient } from '@/lib/api/client';
@@ -17,11 +16,12 @@ export interface TimerSession {
 export interface CreateTimerSessionRequest {
   user_id: number;
   date: string;
-  subject?: string; // 可為空
+  subject?: string;
   duration: number;
 }
 export interface UpdateTimerSessionRequest {
-  duration: number; // 明确定义更新需要的字段
+  duration?: number;
+  subject?: string;
 }
 
 export class TimerSessionsClient {
@@ -49,10 +49,11 @@ export class TimerSessionsClient {
   }
   async update(id: number, data: UpdateTimerSessionRequest): Promise<TimerSession | null> {
     try {
-      return await apiClient.put<TimerSession>(`/timer_sessions/${id}`, data); // 使用PUT方法
+      const result = await apiClient.put<TimerSession>(`/timer_sessions/${id}`, data);
+      return result;
     } catch (error) {
       logger.error('更新計時記錄失敗:', error);
-      return null;
+      throw error;
     }
   }
   // 獲取今日任務列表

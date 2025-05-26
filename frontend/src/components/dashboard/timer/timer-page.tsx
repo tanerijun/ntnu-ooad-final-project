@@ -16,7 +16,7 @@ import { StudyTaskCard } from '@/components/dashboard/timer/study-task-card';
 interface Task {
   id: number;
   subject: string;
-  duration: number; // 新增 duration 屬性
+  duration: number;
 }
 
 export function TimerPage(): React.JSX.Element {
@@ -55,15 +55,15 @@ export function TimerPage(): React.JSX.Element {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    setTasks(
-      sessions.map((session) => ({
+    const sortedTasks = sessions
+      .map((session) => ({
         id: session.id,
         subject: session.subject,
-        duration: session.duration, // 加入 duration
+        duration: session.duration,
       }))
-    );
+      .sort((a, b) => a.subject.localeCompare(b.subject));
+    setTasks(sortedTasks);
   }, [sessions]);
-  //logger.debug(sessions);
 
   const handleTimeUpdate = React.useCallback((id: number, seconds: number) => {
     setTimeRecords((prev) => ({
@@ -104,7 +104,7 @@ export function TimerPage(): React.JSX.Element {
         </Stack>
         <AddTimerButton onSuccess={fetchSessions} />
       </Card>
-      
+
       <Box
         sx={{
           display: 'grid',

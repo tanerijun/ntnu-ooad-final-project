@@ -1,4 +1,3 @@
-// app/Controllers/Http/TaskSettingsController.ts
 import { HttpContext } from '@adonisjs/core/http'
 import UserTaskSetting from '#models/user_task'
 import TimerSession from '#models/timer_session'
@@ -12,35 +11,44 @@ export default class TaskSettingsController {
     }
     const user = auth.user
 
+    // 取得今日所有計時資料
+    const today = DateTime.now().toISODate()
+    const allTodaySessions = await TimerSession.query()
+      .where('user_id', user.id)
+      .where('date', today)
+
+    // 取得可視科目設定
     const settings = await UserTaskSetting.query()
       .where('user_id', user.id)
       .andWhere('visible', true)
       .select('subject')
 
-    // 取得今日計時資料（自動補齊缺失資料）
-    const today = DateTime.now().toISODate()
-    const tasks = await Promise.all(
-      settings.map(async (setting) => {
-        let session = await TimerSession.query()
-          .where('user_id', user.id)
-          .where('date', today)
-          .where('subject', setting.subject)
-          .first()
-        // 如果今天沒有計時資料，則創建一個新的計時紀錄且預設為0
-        if (!session) {
-          session = await TimerSession.create({
-            user_id: user.id,
-            date: today,
-            subject: setting.subject,
-            duration: 0,
-          })
-        }
+    const visibleSubjects = new Set(settings.map((s) => s.subject))
 
-        return session
+    // 過濾出可視的計時記錄
+    const visibleSessions = allTodaySessions.filter((session) =>
+      visibleSubjects.has(session.subject)
+    )
+
+    // 為沒有計時記錄的可視科目創建預設記錄
+    const existingSubjects = new Set(visibleSessions.map((s) => s.subject))
+    const missingSubjects = settings.filter((s) => !existingSubjects.has(s.subject))
+
+    const newSessions = await Promise.all(
+      missingSubjects.map(async (setting) => {
+        return await TimerSession.create({
+          user_id: user.id,
+          date: today,
+          subject: setting.subject,
+          duration: 0,
+        })
       })
     )
 
-    return response.json(tasks)
+    const allSessions = [...visibleSessions, ...newSessions]
+    // 按科目名稱字母順序排序
+    allSessions.sort((a, b) => a.subject.localeCompare(b.subject))
+    return response.json(allSessions)
   }
 
   // 切換任務可視狀態
