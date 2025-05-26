@@ -1,8 +1,12 @@
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $createHeadingNode, $createQuoteNode, type HeadingTagType } from '@lexical/rich-text';
+import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from '@lexical/list';
+import { $setBlocksType } from '@lexical/selection';
 import { mergeRegister } from '@lexical/utils';
 import {
+  $createParagraphNode,
   $getSelection,
   $isRangeSelection,
   CAN_REDO_COMMAND,
@@ -29,6 +33,9 @@ export default function ToolbarPlugin() {
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
   const [isStrikethrough, setIsStrikethrough] = useState(false);
+  const [blockType, setBlockType] = useState('paragraph');
+  const [showHelp, setShowHelp] = useState(false);
+  const helpRef = useRef<HTMLDivElement>(null);
 
   const $updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -38,8 +45,30 @@ export default function ToolbarPlugin() {
       setIsItalic(selection.hasFormat('italic'));
       setIsUnderline(selection.hasFormat('underline'));
       setIsStrikethrough(selection.hasFormat('strikethrough'));
+
+      // Update block type
+      const anchorNode = selection.anchor.getNode();
+      const element = anchorNode.getKey() === 'root' 
+        ? anchorNode 
+        : anchorNode.getTopLevelElementOrThrow();
+      const elementKey = element.getKey();
+      const elementDOM = editor.getElementByKey(elementKey);
+      
+      if (elementDOM !== null) {
+        if (element.getType() === 'heading') {
+          const tag = (element as unknown as { getTag: () => string }).getTag();
+          setBlockType(tag);
+        } else if (element.getType() === 'quote') {
+          setBlockType('quote');
+        } else if (element.getType() === 'list') {
+          const listType = (element as unknown as { getListType: () => string }).getListType();
+          setBlockType(listType);
+        } else {
+          setBlockType('paragraph');
+        }
+      }
     }
-  }, []);
+  }, [editor]);
 
   useEffect(() => {
     return mergeRegister(
@@ -74,6 +103,21 @@ export default function ToolbarPlugin() {
       )
     );
   }, [editor, $updateToolbar]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (helpRef.current && !helpRef.current.contains(event.target as Node)) {
+        setShowHelp(false);
+      }
+    }
+
+    if (showHelp) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showHelp]);
 
   return (
     <div className="toolbar" ref={toolbarRef}>
@@ -135,11 +179,94 @@ export default function ToolbarPlugin() {
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
         }}
-        className={`toolbar-item spaced ${isStrikethrough}`}
+        className={`toolbar-item spaced ${isStrikethrough && 'active'}`}
         aria-label="Format Strikethrough"
       >
         <i className="format strikethrough" />
       </button>
+      <Divider />
+      <select
+        className="toolbar-item block-controls"
+        value={blockType}
+        onChange={(e) => {
+          const value = e.target.value;
+          editor.update(() => {
+            const selection = $getSelection();
+            if ($isRangeSelection(selection)) {
+              if (value === 'paragraph') {
+                $setBlocksType(selection, () => $createParagraphNode());
+              } else if (value === 'quote') {
+                $setBlocksType(selection, () => $createQuoteNode());
+              } else if (value.startsWith('h')) {
+                $setBlocksType(selection, () => $createHeadingNode(value as HeadingTagType));
+              }
+            }
+          });
+        }}
+      >
+        <option value="paragraph">Normal</option>
+        <option value="h1">Heading 1</option>
+        <option value="h2">Heading 2</option>
+        <option value="h3">Heading 3</option>
+        <option value="quote">Quote</option>
+      </select>
+      <Divider />
+      <button
+        type="button"
+        onClick={() => {
+          editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
+        }}
+        className="toolbar-item spaced"
+        aria-label="Bullet List"
+      >
+        <i className="format bullet-list" />
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
+        }}
+        className="toolbar-item spaced"
+        aria-label="Numbered List"
+      >
+        <i className="format numbered-list" />
+      </button>
+      <Divider />
+      <div className="help-container" ref={helpRef}>
+        <button
+          type="button"
+          onClick={() => {
+            setShowHelp(!showHelp);
+          }}
+          className="toolbar-item"
+          aria-label="Keyboard Shortcuts"
+          title="Show keyboard shortcuts"
+        >
+          <i className="format help" />
+        </button>
+        {showHelp ? (
+          <div className="help-tooltip">
+            <div className="help-content">
+              <h4>Keyboard Shortcuts</h4>
+              <div className="shortcut-group">
+                <div><kbd>Ctrl/Cmd + B</kbd> Bold</div>
+                <div><kbd>Ctrl/Cmd + I</kbd> Italic</div>
+                <div><kbd>Ctrl/Cmd + U</kbd> Underline</div>
+                <div><kbd>Ctrl/Cmd + Shift + S</kbd> Strikethrough</div>
+              </div>
+              <div className="shortcut-group">
+                <div><kbd>Alt + 0</kbd> Normal text</div>
+                <div><kbd>Alt + 1-6</kbd> Headings</div>
+                <div><kbd>Alt + Q</kbd> Quote</div>
+              </div>
+              <div className="shortcut-group">
+                <div><kbd>Ctrl/Cmd + Shift + 7</kbd> Numbered list</div>
+                <div><kbd>Ctrl/Cmd + Shift + 8</kbd> Bullet list</div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
       <Divider />
       <button
         type="button"

@@ -237,12 +237,18 @@ export default function EditNotePage(): React.JSX.Element {
       </Paper>
 
       {/* Content Editor */}
-      <Paper variant="outlined" sx={{ minHeight: '400px' }}>
-        <Box sx={{ p: 2 }}>
+      <Paper variant="outlined" sx={{ minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ p: 2, pb: 0 }}>
           <Typography variant="subtitle2" fontWeight="medium" sx={{ mb: 2 }}>
             Content
           </Typography>
-          <TextEditor initialContent={content} onChange={setContent} />
+        </Box>
+        <Box sx={{ flex: 1, p: 2, pt: 0, display: 'flex', flexDirection: 'column' }}>
+          <TextEditor 
+            initialContent={content} 
+            onChange={setContent}
+            className="editor-full-height"
+          />
         </Box>
       </Paper>
 

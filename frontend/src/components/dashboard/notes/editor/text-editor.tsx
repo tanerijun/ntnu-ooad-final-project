@@ -2,19 +2,23 @@
 
 import * as React from 'react';
 import { useEffect } from 'react';
+import { AutoLinkNode, LinkNode } from '@lexical/link';
+import { ListItemNode, ListNode } from '@lexical/list';
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 import { LexicalComposer, type InitialConfigType } from '@lexical/react/LexicalComposer';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
+import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import {
   $createParagraphNode,
   $createTextNode,
   $getRoot,
-  $isTextNode,
   isHTMLElement,
   ParagraphNode,
   TextNode,
@@ -28,28 +32,40 @@ import {
 
 import { logger } from '@/lib/default-logger';
 
-import ExampleTheme from './ExampleTheme';
-import { parseAllowedColor, parseAllowedFontSize } from './style-config';
+import AutoLinkPlugin from './AutoLinkPlugin';
+import EditorTheme from './EditorTheme';
+import KeyboardShortcutsPlugin from './KeyboardShortcutsPlugin';
 import ToolbarPlugin from './ToolbarPlugin';
-import TreeViewPlugin from './TreeViewPlugin';
 
 interface TextEditorProps {
   initialContent?: string;
   onChange?: (value: string) => void;
+  height?: string | number;
+  maxHeight?: string | number;
+  className?: string;
 }
 
-const placeholder = 'Enter some rich text...';
+const placeholder = 'Write a note...';
 
-const removeStylesExportDOM = (editor: LexicalEditor, target: LexicalNode): DOMExportOutput => {
+const cleanExportDOM = (editor: LexicalEditor, target: LexicalNode): DOMExportOutput => {
   const output = target.exportDOM(editor);
-  if (output && isHTMLElement(output.element)) {
-    for (const el of [output.element, ...output.element.querySelectorAll('[style],[class],[dir="ltr"]')]) {
-      el.removeAttribute('class');
-      el.removeAttribute('style');
-      if (el.getAttribute('dir') === 'ltr') {
-        el.removeAttribute('dir');
+  if (output?.element && isHTMLElement(output.element)) {
+    const element = output.element;
+    const allowedAttributes = ['href', 'target', 'rel'];
+
+    Array.from(element.attributes).forEach((attr) => {
+      if (!allowedAttributes.includes(attr.name)) {
+        element.removeAttribute(attr.name);
       }
-    }
+    });
+
+    element.querySelectorAll('*').forEach((child) => {
+      Array.from(child.attributes).forEach((attr) => {
+        if (!allowedAttributes.includes(attr.name)) {
+          child.removeAttribute(attr.name);
+        }
+      });
+    });
   }
   return output;
 };
@@ -58,65 +74,37 @@ const exportMap: DOMExportOutputMap = new Map<
   Klass<LexicalNode>,
   (editor: LexicalEditor, target: LexicalNode) => DOMExportOutput
 >([
-  [ParagraphNode, removeStylesExportDOM],
-  [TextNode, removeStylesExportDOM],
+  [ParagraphNode, cleanExportDOM],
+  [TextNode, cleanExportDOM],
+  [HeadingNode, cleanExportDOM],
+  [QuoteNode, cleanExportDOM],
+  [ListNode, cleanExportDOM],
+  [ListItemNode, cleanExportDOM],
+  [LinkNode, cleanExportDOM],
 ]);
-
-const getExtraStyles = (element: HTMLElement): string => {
-  let extraStyles = '';
-  const fontSize = parseAllowedFontSize(element.style.fontSize);
-  const backgroundColor = parseAllowedColor(element.style.backgroundColor);
-  const color = parseAllowedColor(element.style.color);
-  if (fontSize !== '' && fontSize !== '15px') {
-    extraStyles += `font-size: ${fontSize};`;
-  }
-  if (backgroundColor !== '' && backgroundColor !== 'rgb(255, 255, 255)') {
-    extraStyles += `background-color: ${backgroundColor};`;
-  }
-  if (color !== '' && color !== 'rgb(0, 0, 0)') {
-    extraStyles += `color: ${color};`;
-  }
-  return extraStyles;
-};
 
 const constructImportMap = (): DOMConversionMap => {
   const importMap: DOMConversionMap = {};
-  for (const [tag, fn] of Object.entries(TextNode.importDOM() || {})) {
-    importMap[tag] = (importNode) => {
-      const importer = fn(importNode);
-      if (!importer) return null;
-      return {
-        ...importer,
-        conversion: (element) => {
-          const output = importer.conversion(element);
-          if (output?.forChild === undefined || output.after !== undefined || output.node !== null) {
-            return output;
-          }
-          const extraStyles = getExtraStyles(element);
-          if (extraStyles) {
-            const { forChild } = output;
-            return {
-              ...output,
-              forChild: (child, parent) => {
-                const textNode = forChild(child, parent);
-                if ($isTextNode(textNode)) {
-                  textNode.setStyle(textNode.getStyle() + extraStyles);
-                }
-                return textNode;
-              },
-            };
-          }
-          return output;
-        },
-      };
-    };
-  }
+
+  const nodeMaps = [
+    TextNode.importDOM?.() || {},
+    ParagraphNode.importDOM?.() || {},
+    HeadingNode.importDOM?.() || {},
+    QuoteNode.importDOM?.() || {},
+    ListNode.importDOM?.() || {},
+    ListItemNode.importDOM?.() || {},
+  ];
+
+  nodeMaps.forEach((nodeMap) => {
+    Object.assign(importMap, nodeMap);
+  });
+
   return importMap;
 };
 
 function InitialContentPlugin({ initialContent }: { initialContent?: string }) {
   const [editor] = useLexicalComposerContext();
-  const hasInitialized = React.useRef(false); // 👈 Track initialization
+  const hasInitialized = React.useRef(false);
 
   useEffect(() => {
     if (hasInitialized.current || !initialContent) return;
@@ -132,17 +120,23 @@ function InitialContentPlugin({ initialContent }: { initialContent?: string }) {
       });
     }
 
-    hasInitialized.current = true; // 👈 Ensure it's only set once
+    hasInitialized.current = true;
   }, [editor, initialContent]);
 
   return null;
 }
 
-export default function TextEditor({ initialContent, onChange }: TextEditorProps) {
+export default function TextEditor({
+  initialContent,
+  onChange,
+  height = '100%',
+  maxHeight,
+  className,
+}: TextEditorProps) {
   const editorConfig: InitialConfigType = {
     namespace: 'ReactNoteEditor',
-    theme: ExampleTheme,
-    nodes: [ParagraphNode, TextNode],
+    theme: EditorTheme,
+    nodes: [ParagraphNode, TextNode, HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode],
     onError(error: Error) {
       logger.error('Lexical Error:', error);
     },
@@ -152,9 +146,14 @@ export default function TextEditor({ initialContent, onChange }: TextEditorProps
     },
   };
 
+  const containerStyle: React.CSSProperties = {
+    height: typeof height === 'number' ? `${height}px` : height,
+    maxHeight: maxHeight ? (typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight) : undefined,
+  };
+
   return (
     <LexicalComposer initialConfig={editorConfig}>
-      <div className="editor-container">
+      <div className={`editor-container ${className || ''}`} style={containerStyle}>
         <ToolbarPlugin />
         <div className="editor-inner">
           <RichTextPlugin
@@ -169,6 +168,10 @@ export default function TextEditor({ initialContent, onChange }: TextEditorProps
           />
           <HistoryPlugin />
           <AutoFocusPlugin />
+          <ListPlugin />
+          <TabIndentationPlugin />
+          <AutoLinkPlugin />
+          <KeyboardShortcutsPlugin />
           <InitialContentPlugin initialContent={initialContent} />
           <OnChangePlugin
             onChange={(editorState) => {
@@ -178,7 +181,6 @@ export default function TextEditor({ initialContent, onChange }: TextEditorProps
               });
             }}
           />
-          <TreeViewPlugin />
         </div>
       </div>
     </LexicalComposer>
