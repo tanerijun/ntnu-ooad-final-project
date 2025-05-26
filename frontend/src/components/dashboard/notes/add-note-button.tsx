@@ -14,8 +14,7 @@ interface AddNoteButtonProps {
 export function AddNoteButton({ defaultTag }: AddNoteButtonProps): React.JSX.Element {
   const router = useRouter();
   const handleAdd = async () => {
-    // const note = await notesClient.create();
-    const note = await notesClient.create(defaultTag ? [defaultTag] : []);
+    const note = await notesClient.create(null, defaultTag ? [defaultTag] : []);
     if (note) {
       router.push(`/dashboard/notes/${note.id}/edit`);
     } else {

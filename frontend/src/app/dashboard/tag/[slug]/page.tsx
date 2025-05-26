@@ -41,7 +41,7 @@ export default function TagNotesPage(): React.JSX.Element {
   };
 
   const handleAddNote = async () => {
-    const newNote = await notesClient.create([slug]);
+    const newNote = await notesClient.create(null, [slug]);
     if (newNote) {
       router.push(`/dashboard/notes/${newNote.id}/edit`);
     }
@@ -70,7 +70,7 @@ export default function TagNotesPage(): React.JSX.Element {
                 <CardActionArea onClick={() => {handleNoteClick(note.id)}}>
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold">
-                      Note #{note.id}
+                      {note.title || `Note #${note.id}`}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" noWrap>
                       {extractPlainText(note.content) || 'Empty note'}

@@ -3,14 +3,6 @@
 import { apiClient } from '@/lib/api/client';
 import { logger } from '@/lib/default-logger';
 
-// export interface Note {
-//   id: number;
-//   content: string;
-//   createdAt: string;
-//   updatedAt: string;
-//   tags: string[];
-// }
-
 export interface Tag {
   id: number;
   name: string;
@@ -18,17 +10,19 @@ export interface Tag {
 
 export interface Note {
   id: number;
+  title: string | null;
   content: string;
   createdAt: string;
   updatedAt: string;
-  tags: Tag[];  // not string[]
+  tags: Tag[];
 }
 
 export class NotesClient {
-  async create(tags: string[] = []): Promise<Note | null> {
+  async create(title: string | null = null, tags: string[] = []): Promise<Note | null> {
     try {
-      logger.debug('Creating note with tags:', tags);
+      logger.debug('Creating note with title and tags:', { title, tags });
       return await apiClient.post<Note>('/notes', {
+        title,
         content: '',
         tags,
       });
@@ -56,10 +50,10 @@ export class NotesClient {
     }
   }
 
-  async update(id: number, content: string, tags?: string[]): Promise<Note | null> {
+  async update(id: number, title: string | null, content: string, tags?: string[]): Promise<Note | null> {
     try {
-      logger.debug(`Updating note ${id} with content and tags`, { content, tags });
-      return await apiClient.put<Note>(`/notes/${id}`, { content, tags });
+      logger.debug(`Updating note ${id} with title, content and tags`, { title, content, tags });
+      return await apiClient.put<Note>(`/notes/${id}`, { title, content, tags });
     } catch (error) {
       logger.error(`Failed to update note ${id}:`, error);
       return null;
