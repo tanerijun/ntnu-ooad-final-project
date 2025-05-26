@@ -1,96 +1,58 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
-import dayjs from 'dayjs';
 
 import { config } from '@/config';
-import { Budget } from '@/components/dashboard/overview/budget';
-import { LatestOrders } from '@/components/dashboard/overview/latest-orders';
-import { Sales } from '@/components/dashboard/overview/sales';
-import { TasksProgress } from '@/components/dashboard/overview/tasks-progress';
-import { TotalCustomers } from '@/components/dashboard/overview/total-customers';
-import { TotalProfit } from '@/components/dashboard/overview/total-profit';
-import { Traffic } from '@/components/dashboard/overview/traffic';
+import { ContentAnalytics } from '@/components/dashboard/overview/content-analytics';
+import { NotesStats } from '@/components/dashboard/overview/notes-stats';
+import { RecentNotes } from '@/components/dashboard/overview/recent-notes';
+import { StudyActivity } from '@/components/dashboard/overview/study-activity';
+import { StudyProgress } from '@/components/dashboard/overview/study-progress';
+import { TagDistribution } from '@/components/dashboard/overview/tag-distribution';
+import { TagsStats } from '@/components/dashboard/overview/tags-stats';
 
-export const metadata = { title: `Statistics | ${config.site.name}` } satisfies Metadata;
+export const metadata = { title: `Dashboard | ${config.site.name}` } satisfies Metadata;
 
 export default function Page(): React.JSX.Element {
   return (
     <Stack gap={3}>
+      <Typography variant="h4" component="h1">
+        Statistics
+      </Typography>
+      <Typography variant="body1" color="text.secondary">
+        Track your learning progress and note-taking activity
+      </Typography>
+
       <Grid container spacing={3}>
+        {/* Top Row - Key Metrics */}
         <Grid lg={3} sm={6} xs={12}>
-          <Budget diff={12} trend="up" sx={{ height: '100%' }} value="$24k" />
+          <NotesStats sx={{ height: '100%' }} />
         </Grid>
         <Grid lg={3} sm={6} xs={12}>
-          <TotalCustomers diff={16} trend="down" sx={{ height: '100%' }} value="1.6k" />
+          <TagsStats sx={{ height: '100%' }} />
         </Grid>
-        <Grid lg={3} sm={6} xs={12}>
-          <TasksProgress sx={{ height: '100%' }} value={75.5} />
+        <Grid lg={6} xs={12}>
+          <StudyProgress sx={{ height: '100%' }} targetNotesPerWeek={15} />
         </Grid>
-        <Grid lg={3} sm={6} xs={12}>
-          <TotalProfit sx={{ height: '100%' }} value="$15k" />
-        </Grid>
+
+        {/* Second Row - Activity Charts */}
         <Grid lg={8} xs={12}>
-          <Sales
-            chartSeries={[
-              { name: 'This year', data: [18, 16, 5, 8, 3, 14, 14, 16, 17, 19, 18, 20] },
-              { name: 'Last year', data: [12, 11, 4, 6, 2, 9, 9, 10, 11, 12, 13, 13] },
-            ]}
-            sx={{ height: '100%' }}
-          />
+          <StudyActivity sx={{ height: '100%' }} />
         </Grid>
         <Grid lg={4} md={6} xs={12}>
-          <Traffic chartSeries={[63, 15, 22]} labels={['Desktop', 'Tablet', 'Phone']} sx={{ height: '100%' }} />
+          <TagDistribution sx={{ height: '100%' }} />
         </Grid>
-        <Grid lg={8} md={12} xs={12}>
-          <LatestOrders
-            orders={[
-              {
-                id: 'ORD-007',
-                customer: { name: 'Ekaterina Tankova' },
-                amount: 30.5,
-                status: 'pending',
-                createdAt: dayjs().subtract(10, 'minutes').toDate(),
-              },
-              {
-                id: 'ORD-006',
-                customer: { name: 'Cao Yu' },
-                amount: 25.1,
-                status: 'delivered',
-                createdAt: dayjs().subtract(10, 'minutes').toDate(),
-              },
-              {
-                id: 'ORD-004',
-                customer: { name: 'Alexa Richardson' },
-                amount: 10.99,
-                status: 'refunded',
-                createdAt: dayjs().subtract(10, 'minutes').toDate(),
-              },
-              {
-                id: 'ORD-003',
-                customer: { name: 'Anje Keizer' },
-                amount: 96.43,
-                status: 'pending',
-                createdAt: dayjs().subtract(10, 'minutes').toDate(),
-              },
-              {
-                id: 'ORD-002',
-                customer: { name: 'Clarke Gillebert' },
-                amount: 32.54,
-                status: 'delivered',
-                createdAt: dayjs().subtract(10, 'minutes').toDate(),
-              },
-              {
-                id: 'ORD-001',
-                customer: { name: 'Adam Denisov' },
-                amount: 16.76,
-                status: 'delivered',
-                createdAt: dayjs().subtract(10, 'minutes').toDate(),
-              },
-            ]}
-            sx={{ height: '100%' }}
-          />
+
+        {/* Third Row - Content Analytics */}
+        <Grid lg={12} xs={12}>
+          <ContentAnalytics sx={{ height: '100%' }} />
+        </Grid>
+
+        {/* Fourth Row - Recent Activity */}
+        <Grid lg={12} md={12} xs={12}>
+          <RecentNotes sx={{ height: '100%' }} />
         </Grid>
       </Grid>
     </Stack>
