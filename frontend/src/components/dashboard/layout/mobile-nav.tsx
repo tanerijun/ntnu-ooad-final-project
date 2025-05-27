@@ -13,6 +13,7 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { Logo } from '@/components/core/logo';
+import TagNavItem from '@/components/dashboard/tag/tag-nav';
 
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
@@ -64,13 +65,11 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         {renderNavItems({ pathname, items: navItems })}
       </Box>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Stack spacing={2} sx={{ p: '12px' }}>
-        <div>
-          <Typography color="var(--mui-palette-neutral-100)" variant="subtitle2">
-            TODO: fill with notes
-          </Typography>
-        </div>
-      </Stack>
+      <Box component="nav" sx={{ p: '12px' }}>
+        <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
+          <TagNavItem />
+        </Stack>
+      </Box>
     </Drawer>
   );
 }

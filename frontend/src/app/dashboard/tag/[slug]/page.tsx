@@ -77,7 +77,9 @@ export default function TagNotesPage(): React.JSX.Element {
       </Stack>
 
       {loading ? (
-        <CircularProgress />
+        <Stack alignItems="center" justifyContent="center" sx={{ minHeight: '200px' }}>
+          <CircularProgress />
+        </Stack>
       ) : notes.length === 0 ? (
         <Typography variant="body1">No notes found for this tag.</Typography>
       ) : (

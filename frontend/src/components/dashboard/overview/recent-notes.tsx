@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
@@ -92,7 +93,8 @@ export function RecentNotes({ sx }: RecentNotesProps): React.JSX.Element {
     <Card sx={sx}>
       <CardHeader title="Recent Notes" subheader="Your most recently updated notes" />
       <CardContent sx={{ px: 0 }}>
-        <Table>
+        <Box sx={{ overflowX: 'auto' }}>
+          <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell>Title</TableCell>
@@ -163,7 +165,8 @@ export function RecentNotes({ sx }: RecentNotesProps): React.JSX.Element {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+          </Table>
+        </Box>
       </CardContent>
     </Card>
   );
