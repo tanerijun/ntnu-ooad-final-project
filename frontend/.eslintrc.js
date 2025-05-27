@@ -89,6 +89,8 @@ module.exports = {
     '@typescript-eslint/no-unsafe-return': 'off',
     '@typescript-eslint/no-unsafe-argument': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/prefer-reduce-type-parameter': 'off',
+    '@typescript-eslint/no-confusing-void-expression': 'off',
     '@typescript-eslint/restrict-template-expressions': [
       'error',
       {
@@ -104,6 +106,8 @@ module.exports = {
     'react/jsx-fragments': 'off', // personal style
     'react/prop-types': 'off', // TypeScript is used for type checking
     'jsx-a11y/no-autofocus': 'off',
+    'import/no-named-as-default-member': 'off',
+    'react/jsx-no-leaked-render': 'off',
 
     '@next/next/no-img-element': 'off', // Temporary disabled
   },

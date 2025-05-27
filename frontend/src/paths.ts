@@ -9,7 +9,7 @@ export const paths = {
       details: (id: number) => `/dashboard/notes/${id}/edit`,
     },
     timer: '/dashboard/timer',
-    settings: '/dashboard/settings',
+    reminders: '/dashboard/reminders',
   },
   errors: { notFound: '/errors/not-found' },
 } as const;

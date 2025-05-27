@@ -16,6 +16,7 @@ const UserTaskController = () => import('#controllers/user_task_controller')
 const NotesController = () => import('#controllers/notes_controller')
 const UploadController = () => import('#controllers/upload_controller')
 const TagsController = () => import('#controllers/tags_controller')
+const RemindersController = () => import('#controllers/reminders_controller')
 
 router.post('register', [AuthController, 'register']).as('auth.register')
 router.post('login', [AuthController, 'login']).as('auth.login')
@@ -52,6 +53,13 @@ router
     router.get('tags', [TagsController, 'index']).as('tags.index')
     router.post('tags', [TagsController, 'store']).as('tags.store')
     router.delete('tags/:id', [TagsController, 'destroy']).as('tags.destroy')
+
+    router.get('reminders', [RemindersController, 'index']).as('reminders.index')
+    router.post('reminders', [RemindersController, 'store']).as('reminders.store')
+    router.get('reminders/pending', [RemindersController, 'getPending']).as('reminders.pending')
+    router.get('reminders/:id', [RemindersController, 'show']).as('reminders.show')
+    router.put('reminders/:id', [RemindersController, 'update']).as('reminders.update')
+    router.delete('reminders/:id', [RemindersController, 'destroy']).as('reminders.destroy')
 
     router.post('upload/image', [UploadController, 'uploadImage']).as('upload.image')
     router.delete('upload/image', [UploadController, 'deleteImage']).as('upload.delete')
