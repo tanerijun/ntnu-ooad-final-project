@@ -12,8 +12,10 @@ import { List as ListIcon } from '@phosphor-icons/react/dist/ssr/List';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 
 import { usePopover } from '@/hooks/use-popover';
+import { useSearch } from '@/hooks/use-search';
 import { useUser } from '@/hooks/use-user';
 
+import { SearchModal } from '../search/search-modal';
 import { MobileNav } from './mobile-nav';
 import { UserPopover } from './user-popover';
 
@@ -21,6 +23,7 @@ export function MainNav(): React.JSX.Element | null {
   const { user } = useUser();
 
   const [openNav, setOpenNav] = React.useState<boolean>(false);
+  const { isOpen: isSearchOpen, openSearch, closeSearch } = useSearch();
 
   const userPopover = usePopover<HTMLDivElement>();
 
@@ -54,12 +57,8 @@ export function MainNav(): React.JSX.Element | null {
             >
               <ListIcon />
             </IconButton>
-            <Tooltip title="Search">
-              <IconButton
-                onClick={() => {
-                  alert('TODO: Implement search functionality');
-                }}
-              >
+            <Tooltip title="Search (⌘K)">
+              <IconButton onClick={openSearch}>
                 <MagnifyingGlassIcon />
               </IconButton>
             </Tooltip>
@@ -94,6 +93,7 @@ export function MainNav(): React.JSX.Element | null {
         }}
         open={openNav}
       />
+      <SearchModal open={isSearchOpen} onClose={closeSearch} />
     </React.Fragment>
   );
 }

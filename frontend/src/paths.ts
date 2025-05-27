@@ -4,7 +4,10 @@ export const paths = {
   dashboard: {
     statistics: '/dashboard',
     account: '/dashboard/account',
-    notes: '/dashboard/notes',
+    notes: {
+      index: '/dashboard/notes',
+      details: (id: number) => `/dashboard/notes/${id}/edit`,
+    },
     timer: '/dashboard/timer',
     settings: '/dashboard/settings',
   },

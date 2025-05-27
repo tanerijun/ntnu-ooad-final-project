@@ -43,6 +43,7 @@ router.get('/', async () => {
 router
   .group(() => {
     router.get('notes', [NotesController, 'index']).as('notes.index')
+    router.get('notes/search', [NotesController, 'search']).as('notes.search')
     router.post('notes', [NotesController, 'store']).as('notes.store')
     router.get('notes/:id', [NotesController, 'show']).as('notes.show')
     router.put('notes/:id', [NotesController, 'update']).as('notes.update')

@@ -12,6 +12,32 @@ export default class NotesController {
       .orderBy('updatedAt', 'desc')
   }
 
+  async search({ request, auth }: HttpContext) {
+    await auth.check()
+
+    const query = request.input('q', '').trim()
+
+    if (!query) {
+      return []
+    }
+
+    const searchTerm = `%${query}%`
+
+    return await Note.query()
+      .where('userId', auth.user!.id)
+      .andWhere((builder) => {
+        builder
+          .whereILike('title', searchTerm)
+          .orWhereILike('content', searchTerm)
+          .orWhereHas('tags', (tagBuilder) => {
+            tagBuilder.whereILike('name', searchTerm)
+          })
+      })
+      .preload('tags')
+      .orderBy('updatedAt', 'desc')
+      .limit(20)
+  }
+
   async store({ request, auth }: HttpContext) {
     await auth.check()
 

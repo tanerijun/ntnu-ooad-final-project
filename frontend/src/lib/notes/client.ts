@@ -41,6 +41,15 @@ export class NotesClient {
     }
   }
 
+  async search(query: string): Promise<Note[]> {
+    try {
+      return await apiClient.get<Note[]>('/notes/search', { params: { q: query } });
+    } catch (error) {
+      logger.error('Failed to search notes:', error);
+      return [];
+    }
+  }
+
   async get(id: number): Promise<Note | null> {
     try {
       return await apiClient.get<Note>(`/notes/${id}`);
