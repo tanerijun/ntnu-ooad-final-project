@@ -58,7 +58,12 @@ export default function EditNotePage(): React.JSX.Element {
   }, [id]);
 
   useEffect(() => {
-    setAvailableTags(tagManager.getAllTagNames());
+    const loadTags = async () => {
+      if (!tagManager.isReady()) {
+        await tagManager.refresh();
+      }
+      setAvailableTags(tagManager.getAllTagNames());
+    };
 
     const listener: TagEventListener = {
       onTagsUpdated: (updatedTags: StoredTag[]) => {
@@ -67,6 +72,7 @@ export default function EditNotePage(): React.JSX.Element {
     };
 
     tagManager.addListener(listener);
+    void loadTags();
 
     return () => {
       tagManager.removeListener(listener);
@@ -80,7 +86,7 @@ export default function EditNotePage(): React.JSX.Element {
     try {
       const updatedNote = await notesClient.update(note.id, title || null, content, tags);
       if (updatedNote) {
-        syncTags(tags);
+        await syncTags(tags);
         setNote(updatedNote);
         router.push('/dashboard/notes');
       } else {

@@ -15,6 +15,7 @@ const TimerSessionsController = () => import('#controllers/timer_sessions_contro
 const UserTaskController = () => import('#controllers/user_task_controller')
 const NotesController = () => import('#controllers/notes_controller')
 const UploadController = () => import('#controllers/upload_controller')
+const TagsController = () => import('#controllers/tags_controller')
 
 router.post('register', [AuthController, 'register']).as('auth.register')
 router.post('login', [AuthController, 'login']).as('auth.login')
@@ -46,6 +47,10 @@ router
     router.get('notes/:id', [NotesController, 'show']).as('notes.show')
     router.put('notes/:id', [NotesController, 'update']).as('notes.update')
     router.delete('notes/:id', [NotesController, 'destroy']).as('notes.destroy')
+
+    router.get('tags', [TagsController, 'index']).as('tags.index')
+    router.post('tags', [TagsController, 'store']).as('tags.store')
+    router.delete('tags/:id', [TagsController, 'destroy']).as('tags.destroy')
 
     router.post('upload/image', [UploadController, 'uploadImage']).as('upload.image')
     router.delete('upload/image', [UploadController, 'deleteImage']).as('upload.delete')

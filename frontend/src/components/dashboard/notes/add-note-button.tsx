@@ -17,7 +17,7 @@ export function AddNoteButton({ defaultTag }: AddNoteButtonProps): React.JSX.Ele
   const handleAdd = async () => {
     if (defaultTag) {
       const tagManager = TagManager.getInstance();
-      tagManager.addTag(defaultTag);
+      await tagManager.addTag(defaultTag);
     }
 
     const note = await notesClient.create(null, defaultTag ? [defaultTag] : []);

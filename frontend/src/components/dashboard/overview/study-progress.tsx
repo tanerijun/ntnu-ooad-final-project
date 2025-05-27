@@ -28,9 +28,15 @@ export function StudyProgress({ sx, targetNotesPerWeek = 10 }: StudyProgressProp
   useEffect(() => {
     const loadProgressData = async () => {
       try {
+        const tagManager = TagManager.getInstance();
+
+        if (!tagManager.isReady()) {
+          await tagManager.refresh();
+        }
+
         const [notesData, tagsData] = await Promise.all([
           notesClient.getAll(),
-          Promise.resolve(TagManager.getInstance().getAllTags()),
+          Promise.resolve(tagManager.getAllTags()),
         ]);
 
         setNotes(notesData);

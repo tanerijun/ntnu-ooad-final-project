@@ -17,34 +17,51 @@ export default function TagNotesPage(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const tagManager = TagManager.getInstance();
-    const tagInfo = tagManager.findBySlug(slug);
-    const tagName = tagInfo ? tagInfo.name : tagManager.slugToName(slug);
+    const loadNotesForTag = async () => {
+      const tagManager = TagManager.getInstance();
 
-    notesClient
-      .getAll()
-      .then((data) => {
+      if (!tagManager.isReady()) {
+        await tagManager.refresh();
+      }
+
+      const tagInfo = tagManager.findBySlug(slug);
+      const tagName = tagInfo ? tagInfo.name : tagManager.slugToName(slug);
+
+      try {
+        const data = await notesClient.getAll();
         const filtered = data
           .filter((note) => note.tags.some((tag) => tag.name === tagName))
           .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
         setNotes(filtered);
-      })
-      .catch((err: unknown) => {
+      } catch (err: unknown) {
         logger.error('Failed to fetch tag notes', err);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    void loadNotesForTag();
   }, [slug]);
 
   const handleAddNote = async () => {
-    const tagManager = TagManager.getInstance();
-    const tagInfo = tagManager.findBySlug(slug);
-    const tagName = tagInfo ? tagInfo.name : tagManager.slugToName(slug);
+    try {
+      const tagManager = TagManager.getInstance();
 
-    const newNote = await notesClient.create(null, [tagName]);
-    if (newNote) {
-      router.push(`/dashboard/notes/${newNote.id}/edit`);
+      if (!tagManager.isReady()) {
+        await tagManager.refresh();
+      }
+
+      const tagInfo = tagManager.findBySlug(slug);
+      const tagName = tagInfo ? tagInfo.name : tagManager.slugToName(slug);
+
+      await tagManager.addTag(tagName);
+
+      const newNote = await notesClient.create(null, [tagName]);
+      if (newNote) {
+        router.push(`/dashboard/notes/${newNote.id}/edit`);
+      }
+    } catch (error) {
+      logger.error('Failed to create note with tag:', error);
     }
   };
 

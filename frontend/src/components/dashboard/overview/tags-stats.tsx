@@ -24,16 +24,24 @@ export function TagsStats({ sx }: TagsStatsProps): React.JSX.Element {
 
   useEffect(() => {
     const tagManager = TagManager.getInstance();
-    setTags(tagManager.getAllTags());
-    setLoading(false);
+    
+    const loadTags = async () => {
+      if (!tagManager.isReady()) {
+        await tagManager.refresh();
+      }
+      setTags(tagManager.getAllTags());
+      setLoading(false);
+    };
 
     const listener: TagEventListener = {
       onTagsUpdated: (updatedTags: StoredTag[]) => {
         setTags(updatedTags);
+        setLoading(false);
       },
     };
 
     tagManager.addListener(listener);
+    void loadTags();
 
     return () => {
       tagManager.removeListener(listener);

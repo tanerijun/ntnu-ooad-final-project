@@ -2,6 +2,8 @@
 
 import { logger } from '@/lib/default-logger';
 
+import { tagsClient } from './client';
+
 export interface StoredTag {
   name: string;
   slug: string;
@@ -14,13 +16,12 @@ export interface TagEventListener {
 
 export class TagManager {
   private static instance: TagManager;
-  private readonly STORAGE_KEY = '__app_tags__';
   private listeners: Set<TagEventListener> = new Set<TagEventListener>();
   private tags: StoredTag[] = [];
+  private isLoaded = false;
 
   private constructor() {
-    this.loadFromStorage();
-    this.migrateOldTags();
+    void this.loadFromDatabase();
   }
 
   public static getInstance(): TagManager {
@@ -39,7 +40,7 @@ export class TagManager {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener.onTagsUpdated([...this.tags]);
       } catch (error) {
@@ -47,27 +48,27 @@ export class TagManager {
       }
     });
 
-    // Also dispatch browser event for components using addEventListener
-    window.dispatchEvent(new CustomEvent('tagsUpdated', { 
-      detail: { tags: [...this.tags] } 
-    }));
+    window.dispatchEvent(
+      new CustomEvent('tagsUpdated', {
+        detail: { tags: [...this.tags] },
+      })
+    );
   }
 
-  private loadFromStorage(): void {
+  private async loadFromDatabase(): Promise<void> {
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      this.tags = stored ? JSON.parse(stored) : [];
+      const dbTags = await tagsClient.getAll();
+      this.tags = dbTags.map((tag) => ({
+        name: tag.name,
+        slug: this.createSlug(tag.name),
+        createdAt: new Date().toISOString(),
+      }));
+      this.isLoaded = true;
+      this.notifyListeners();
     } catch (error) {
-      logger.error('Failed to load tags from storage:', error);
+      logger.error('Failed to load tags from database:', error);
       this.tags = [];
-    }
-  }
-
-  private saveToStorage(): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tags));
-    } catch (error) {
-      logger.error('Failed to save tags to localStorage:', error);
+      this.isLoaded = true;
     }
   }
 
@@ -79,9 +80,9 @@ export class TagManager {
     return decodeURIComponent(slug).replace(/-/g, ' ');
   }
 
-  public addTag(tagName: string): StoredTag {
+  public async addTag(tagName: string): Promise<StoredTag> {
     const trimmed = tagName.trim().toLowerCase();
-    
+
     if (!trimmed) {
       throw new Error('Tag name cannot be empty');
     }
@@ -91,62 +92,64 @@ export class TagManager {
       return existing;
     }
 
-    const newTag: StoredTag = {
-      name: trimmed,
-      slug: this.createSlug(trimmed),
-      createdAt: new Date().toISOString()
-    };
+    try {
+      await tagsClient.create(trimmed);
+      await this.loadFromDatabase();
 
-    this.tags.push(newTag);
-    this.saveToStorage();
-    this.notifyListeners();
+      const newTag = this.findByName(trimmed);
+      if (newTag) {
+        return newTag;
+      }
 
-    return newTag;
+      throw new Error('Failed to create tag');
+    } catch (error) {
+      logger.error('Failed to add tag:', error);
+      throw error;
+    }
   }
 
-  public addTags(tagNames: string[]): StoredTag[] {
-    const addedTags: StoredTag[] = [];
-    let hasChanges = false;
+  public async addTags(tagNames: string[]): Promise<StoredTag[]> {
+    const uniqueNames = [...new Set(tagNames.map((name) => name.trim().toLowerCase()))];
+    const newTags = uniqueNames.filter((name) => name && !this.findByName(name));
 
-    tagNames.forEach(name => {
-      const trimmed = name.trim().toLowerCase();
-      if (trimmed && !this.findByName(trimmed)) {
-        const newTag: StoredTag = {
-          name: trimmed,
-          slug: this.createSlug(trimmed),
-          createdAt: new Date().toISOString()
-        };
-        this.tags.push(newTag);
-        addedTags.push(newTag);
-        hasChanges = true;
-      } else if (trimmed) {
-        const existing = this.findByName(trimmed);
-        if (existing) {
-          addedTags.push(existing);
-        }
-      }
-    });
-
-    if (hasChanges) {
-      this.saveToStorage();
-      this.notifyListeners();
+    if (newTags.length === 0) {
+      return uniqueNames.map((name) => this.findByName(name)).filter(Boolean) as StoredTag[];
     }
 
-    return addedTags;
+    try {
+      await tagsClient.createMultiple(newTags);
+      await this.loadFromDatabase();
+
+      return uniqueNames.map((name) => this.findByName(name)).filter(Boolean) as StoredTag[];
+    } catch (error) {
+      logger.error('Failed to add tags:', error);
+      throw error;
+    }
   }
 
-  public removeTag(tagName: string): boolean {
+  public async removeTag(tagName: string): Promise<boolean> {
     const trimmed = tagName.trim().toLowerCase();
-    const index = this.tags.findIndex(tag => tag.name === trimmed);
-    
-    if (index === -1) {
+    const tag = this.findByName(trimmed);
+
+    if (!tag) {
       return false;
     }
 
-    this.tags.splice(index, 1);
-    this.saveToStorage();
-    this.notifyListeners();
-    return true;
+    try {
+      // Find the database tag to get its ID
+      const dbTags = await tagsClient.getAll();
+      const dbTag = dbTags.find((t) => t.name === trimmed);
+
+      if (dbTag) {
+        await tagsClient.delete(dbTag.id);
+        await this.loadFromDatabase();
+      }
+
+      return true;
+    } catch (error) {
+      logger.error('Failed to remove tag:', error);
+      throw error;
+    }
   }
 
   public getAllTags(): StoredTag[] {
@@ -154,136 +157,42 @@ export class TagManager {
   }
 
   public getAllTagNames(): string[] {
-    return this.tags.map(tag => tag.name);
+    return this.tags.map((tag) => tag.name);
   }
 
   public getAllTagSlugs(): string[] {
-    return this.tags.map(tag => tag.slug);
+    return this.tags.map((tag) => tag.slug);
   }
 
   public findByName(name: string): StoredTag | null {
     const trimmed = name.trim().toLowerCase();
-    return this.tags.find(tag => tag.name === trimmed) || null;
+    return this.tags.find((tag) => tag.name === trimmed) || null;
   }
 
   public findBySlug(slug: string): StoredTag | null {
-    return this.tags.find(tag => tag.slug === slug) || null;
+    return this.tags.find((tag) => tag.slug === slug) || null;
   }
 
-  public syncTagsFromNotes(notesTags: string[]): void {
+  public async syncTagsFromNotes(notesTags: string[]): Promise<void> {
     const uniqueTags = [...new Set(notesTags)];
-    this.addTags(uniqueTags);
+    await this.addTags(uniqueTags);
   }
 
-  public clear(): void {
-    this.tags = [];
-    this.saveToStorage();
-    this.notifyListeners();
+  public async refresh(): Promise<void> {
+    await this.loadFromDatabase();
   }
 
-  private migrateOldTags(): void {
-    try {
-      let hasOldData = false;
-
-      // Migrate from sidebar tags (__local_tags__)
-      const oldSidebarTags = localStorage.getItem('__local_tags__');
-      if (oldSidebarTags) {
-        const sidebarTags = JSON.parse(oldSidebarTags);
-        if (Array.isArray(sidebarTags)) {
-          sidebarTags.forEach((slug: string) => {
-            const name = this.slugToName(slug);
-            if (name && !this.findByName(name)) {
-              this.tags.push({
-                name: name.toLowerCase(),
-                slug: this.createSlug(name),
-                createdAt: new Date().toISOString()
-              });
-              hasOldData = true;
-            }
-          });
-        }
-        localStorage.removeItem('__local_tags__');
-      }
-
-      // Migrate from note editor tags (__available_tags__)
-      const oldAvailableTags = localStorage.getItem('__available_tags__');
-      if (oldAvailableTags) {
-        const availableTags = JSON.parse(oldAvailableTags);
-        if (Array.isArray(availableTags)) {
-          availableTags.forEach((name: string) => {
-            const trimmed = name.trim().toLowerCase();
-            if (trimmed && !this.findByName(trimmed)) {
-              this.tags.push({
-                name: trimmed,
-                slug: this.createSlug(trimmed),
-                createdAt: new Date().toISOString()
-              });
-              hasOldData = true;
-            }
-          });
-        }
-        localStorage.removeItem('__available_tags__');
-      }
-
-      if (hasOldData) {
-        this.saveToStorage();
-        logger.debug('Successfully migrated old tags to new system');
-      }
-    } catch (error) {
-      logger.error('Failed to migrate old tags:', error);
-    }
+  public isReady(): boolean {
+    return this.isLoaded;
   }
 }
 
-// Convenience functions for backward compatibility and easier usage
 export const tagManager = TagManager.getInstance();
 
-export function getAllTagNames(): string[] {
-  return tagManager.getAllTagNames();
-}
-
-export function getAllTagSlugs(): string[] {
-  return tagManager.getAllTagSlugs();
-}
-
-export function addTagToStorage(tagName: string): StoredTag {
-  return tagManager.addTag(tagName);
-}
-
-export function addTagsToStorage(tagNames: string[]): StoredTag[] {
-  return tagManager.addTags(tagNames);
-}
-
-export function findTagByName(name: string): StoredTag | null {
-  return tagManager.findByName(name);
-}
-
-export function findTagBySlug(slug: string): StoredTag | null {
-  return tagManager.findBySlug(slug);
-}
-
-export function slugToTagName(slug: string): string {
-  return tagManager.slugToName(slug);
-}
-
-export function tagNameToSlug(name: string): string {
-  const tag = tagManager.findByName(name);
-  return tag ? tag.slug : tagManager['createSlug'](name);
-}
-
-export function syncTagsFromNotes(notesTags: string[]): void {
-  tagManager.syncTagsFromNotes(notesTags);
-}
-
-export function initializeTagStorage(): void {
-  // Initialization is handled in the constructor via getInstance()
-  TagManager.getInstance();
-}
-
 export function useTagStorageSync() {
-  const syncTags = (tags: string[]) => {
-    tagManager.addTags(tags);
+  const syncTags = async (tags: string[]) => {
+    await tagManager.addTags(tags);
   };
-  
+
   return { syncTags };
 }

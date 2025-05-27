@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { Bookmarks, Plus } from '@phosphor-icons/react';
 
+import { logger } from '@/lib/default-logger';
 import { TagManager, type StoredTag, type TagEventListener } from '@/lib/tags/storage';
 
 export default function TagNavItem(): React.JSX.Element {
@@ -17,7 +18,13 @@ export default function TagNavItem(): React.JSX.Element {
   // Initialize tag manager and listen for tag updates from other components
   React.useEffect(() => {
     const tagManager = TagManager.getInstance();
-    setTags(tagManager.getAllTagSlugs());
+
+    const loadTags = async () => {
+      if (!tagManager.isReady()) {
+        await tagManager.refresh();
+      }
+      setTags(tagManager.getAllTagSlugs());
+    };
 
     const listener: TagEventListener = {
       onTagsUpdated: (updatedTags: StoredTag[]) => {
@@ -26,21 +33,26 @@ export default function TagNavItem(): React.JSX.Element {
     };
 
     tagManager.addListener(listener);
+    void loadTags();
 
     return () => {
       tagManager.removeListener(listener);
     };
   }, []);
 
-  const handleCreateTag = () => {
+  const handleCreateTag = async () => {
     const trimmed = newTagName.trim();
     if (trimmed) {
-      const tagManager = TagManager.getInstance();
-      const storedTag = tagManager.addTag(trimmed);
+      try {
+        const tagManager = TagManager.getInstance();
+        const storedTag = await tagManager.addTag(trimmed);
 
-      setNewTagName('');
-      setAdding(false);
-      router.push(`/dashboard/tag/${storedTag.slug}`);
+        setNewTagName('');
+        setAdding(false);
+        router.push(`/dashboard/tag/${storedTag.slug}`);
+      } catch (error) {
+        logger.error('Failed to create tag:', error);
+      }
     }
   };
 
@@ -112,7 +124,7 @@ export default function TagNavItem(): React.JSX.Element {
                 setNewTagName(e.target.value);
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateTag();
+                if (e.key === 'Enter') void handleCreateTag();
                 if (e.key === 'Escape') {
                   setNewTagName('');
                   setAdding(false);
