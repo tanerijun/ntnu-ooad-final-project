@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $createHeadingNode, $createQuoteNode, type HeadingTagType } from '@lexical/rich-text';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from '@lexical/list';
@@ -24,6 +25,80 @@ function Divider() {
   return <div className="divider" />;
 }
 
+interface HelpTooltipProps {
+  onClose: () => void;
+}
+
+function HelpTooltip({ onClose }: HelpTooltipProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.help-modal')) {
+        onClose();
+      }
+    }
+
+    function handleEscapeKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [onClose]);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="help-overlay">
+      <div className="help-modal">
+        <div className="help-content">
+          <div className="help-header">
+            <h4>Keyboard Shortcuts</h4>
+            <button
+              type="button"
+              onClick={onClose}
+              className="help-close"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
+          <div className="shortcut-group">
+            <div><kbd>Ctrl/Cmd + B</kbd> Bold</div>
+            <div><kbd>Ctrl/Cmd + I</kbd> Italic</div>
+            <div><kbd>Ctrl/Cmd + U</kbd> Underline</div>
+            <div><kbd>Ctrl/Cmd + Shift + S</kbd> Strikethrough</div>
+          </div>
+          <div className="shortcut-group">
+            <div><kbd>Alt + 0</kbd> Normal text</div>
+            <div><kbd>Alt + 1-6</kbd> Headings</div>
+            <div><kbd>Alt + Q</kbd> Quote</div>
+          </div>
+          <div className="shortcut-group">
+            <div><kbd>Ctrl/Cmd + Shift + 7</kbd> Numbered list</div>
+            <div><kbd>Ctrl/Cmd + Shift + 8</kbd> Bullet list</div>
+            <div><kbd>Ctrl/Cmd + Shift + I</kbd> Insert image</div>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export default function ToolbarPlugin() {
   const [editor] = useLexicalComposerContext();
   const toolbarRef = useRef(null);
@@ -35,7 +110,6 @@ export default function ToolbarPlugin() {
   const [isStrikethrough, setIsStrikethrough] = useState(false);
   const [blockType, setBlockType] = useState('paragraph');
   const [showHelp, setShowHelp] = useState(false);
-  const helpRef = useRef<HTMLDivElement>(null);
 
   const $updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -104,20 +178,7 @@ export default function ToolbarPlugin() {
     );
   }, [editor, $updateToolbar]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (helpRef.current && !helpRef.current.contains(event.target as Node)) {
-        setShowHelp(false);
-      }
-    }
 
-    if (showHelp) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [showHelp]);
 
   return (
     <div className="toolbar" ref={toolbarRef}>
@@ -247,42 +308,18 @@ export default function ToolbarPlugin() {
         <i className="format image" />
       </button>
       <Divider />
-      <div className="help-container" ref={helpRef}>
-        <button
-          type="button"
-          onClick={() => {
-            setShowHelp(!showHelp);
-          }}
-          className="toolbar-item"
-          aria-label="Keyboard Shortcuts"
-          title="Show keyboard shortcuts"
-        >
-          <i className="format help" />
-        </button>
-        {showHelp ? (
-          <div className="help-tooltip">
-            <div className="help-content">
-              <h4>Keyboard Shortcuts</h4>
-              <div className="shortcut-group">
-                <div><kbd>Ctrl/Cmd + B</kbd> Bold</div>
-                <div><kbd>Ctrl/Cmd + I</kbd> Italic</div>
-                <div><kbd>Ctrl/Cmd + U</kbd> Underline</div>
-                <div><kbd>Ctrl/Cmd + Shift + S</kbd> Strikethrough</div>
-              </div>
-              <div className="shortcut-group">
-                <div><kbd>Alt + 0</kbd> Normal text</div>
-                <div><kbd>Alt + 1-6</kbd> Headings</div>
-                <div><kbd>Alt + Q</kbd> Quote</div>
-              </div>
-              <div className="shortcut-group">
-                <div><kbd>Ctrl/Cmd + Shift + 7</kbd> Numbered list</div>
-                <div><kbd>Ctrl/Cmd + Shift + 8</kbd> Bullet list</div>
-                <div><kbd>Ctrl/Cmd + Shift + I</kbd> Insert image</div>
-              </div>
-            </div>
-          </div>
-        ) : null}
-      </div>
+      <button
+        type="button"
+        onClick={() => {
+          setShowHelp(!showHelp);
+        }}
+        className="toolbar-item"
+        aria-label="Keyboard Shortcuts"
+        title="Show keyboard shortcuts"
+      >
+        <i className="format help" />
+      </button>
+      {showHelp && <HelpTooltip onClose={() => setShowHelp(false)} />}
       <Divider />
       <button
         type="button"
