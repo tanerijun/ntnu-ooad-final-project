@@ -13,7 +13,7 @@ import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/di
 
 import type { Reminder } from '@/types/reminder';
 import { logger } from '@/lib/default-logger';
-import { reminderClient } from '@/lib/reminder-client';
+import { reminderClient } from '@/lib/reminder/client';
 import { usePopover } from '@/hooks/use-popover';
 import { useSearch } from '@/hooks/use-search';
 import { useUser } from '@/hooks/use-user';

@@ -10,7 +10,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 
 import type { Reminder } from '@/types/reminder';
 import { logger } from '@/lib/default-logger';
-import { reminderClient } from '@/lib/reminder-client';
+import { reminderClient } from '@/lib/reminder/client';
 import { ReminderForm } from '@/components/dashboard/reminders/reminder-form';
 import { ReminderList } from '@/components/dashboard/reminders/reminder-list';
 
