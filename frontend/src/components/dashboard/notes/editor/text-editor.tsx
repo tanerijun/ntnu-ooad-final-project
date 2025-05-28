@@ -31,7 +31,7 @@ import {
 } from 'lexical';
 
 import { logger } from '@/lib/default-logger';
-import { imageClient, type ImageCompressOptions } from '@/lib/image-upload';
+import { imageClient, type ImageCompressOptions } from '@/lib/image/client';
 
 import AutoLinkPlugin from './AutoLinkPlugin';
 import EditorTheme from './EditorTheme';
