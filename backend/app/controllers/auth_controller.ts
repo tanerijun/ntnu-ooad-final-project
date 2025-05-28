@@ -1,4 +1,3 @@
-import User from '#models/user'
 import {
   loginValidator,
   registerValidator,
@@ -6,41 +5,35 @@ import {
   updateProfileValidator,
   updateProfileWithEmailValidator,
 } from '#validators/auth'
-import env from '#start/env'
 import { errors } from '@adonisjs/core'
-import { cuid } from '@adonisjs/core/helpers'
-import drive from '@adonisjs/drive/services/main'
+import AuthService from '#services/auth_service'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class AuthController {
+  private authService = new AuthService()
+
   async register({ request }: HttpContext) {
     const data = await request.validateUsing(registerValidator)
-    const user = await User.create(data)
-
-    return User.accessTokens.create(user)
+    return await this.authService.createUser(data)
   }
 
   async login({ request }: HttpContext) {
     const { email, password } = await request.validateUsing(loginValidator)
-    const user = await User.verifyCredentials(email, password)
-    return User.accessTokens.create(user)
+    return await this.authService.authenticateUser(email, password)
   }
 
   async logout({ auth }: HttpContext) {
     const user = auth.user
-
     if (!user) {
       throw new errors.E_HTTP_EXCEPTION('User not found during logout', { status: 500 })
     }
 
-    await User.accessTokens.delete(user, user.currentAccessToken.identifier)
-
+    await this.authService.logoutUser(user)
     return { message: 'success' }
   }
 
   async me({ auth }: HttpContext) {
     await auth.check()
-
     return {
       user: auth.user,
     }
@@ -53,19 +46,14 @@ export default class AuthController {
     }
 
     const body = request.body()
+    const hasEmailChanged = body.email !== user.$attributes.email
 
-    // If email hasn't changed, skip email uniqueness validation
-    if (body.email === user.$attributes.email) {
-      const data = await request.validateUsing(updateProfileValidator)
+    const data = hasEmailChanged
+      ? await request.validateUsing(updateProfileWithEmailValidator)
+      : await request.validateUsing(updateProfileValidator)
 
-      await user.merge(data).save()
-      return { user }
-    }
-
-    const data = await request.validateUsing(updateProfileWithEmailValidator)
-
-    await user.merge(data).save()
-    return { user }
+    const updatedUser = await this.authService.updateUserProfile(user, data)
+    return { user: updatedUser }
   }
 
   async updatePassword({ request, auth }: HttpContext) {
@@ -75,16 +63,7 @@ export default class AuthController {
     }
 
     const { currentPassword, newPassword } = await request.validateUsing(updatePasswordValidator)
-
-    try {
-      // Verify current password
-      await User.verifyCredentials(user.email, currentPassword)
-    } catch (error) {
-      throw new errors.E_HTTP_EXCEPTION('Current password is incorrect', { status: 400 })
-    }
-
-    user.password = newPassword
-    await user.save()
+    await this.authService.updateUserPassword(user, currentPassword, newPassword)
 
     return { message: 'Password updated successfully' }
   }
@@ -108,37 +87,10 @@ export default class AuthController {
       throw new errors.E_HTTP_EXCEPTION(avatar.errors[0].message, { status: 400 })
     }
 
-    try {
-      // Delete old avatar if it exists
-      if (user.avatarUrl) {
-        const oldKey = user.avatarUrl.replace(env.get('R2_PUBLIC_URL'), '').substring(1) // Remove leading slash
-
-        try {
-          await drive.use('r2').delete(oldKey)
-        } catch (deleteError) {
-          console.error('Failed to delete old avatar:', deleteError)
-        }
-      }
-
-      const key = `avatars/${cuid()}.${avatar.extname}`
-      await avatar.moveToDisk(key)
-
-      const r2Url = await drive.use('r2').getUrl(key)
-      const publicUrl = r2Url.replace(
-        `${env.get('R2_ENDPOINT')}/${env.get('R2_BUCKET')}`,
-        env.get('R2_PUBLIC_URL')
-      )
-
-      user.avatarUrl = publicUrl
-      await user.save()
-
-      return {
-        message: 'Avatar updated successfully',
-        avatarUrl: user.avatarUrl,
-      }
-    } catch (error) {
-      console.error('Upload error:', error)
-      throw new errors.E_HTTP_EXCEPTION('Failed to upload avatar', { status: 500 })
+    const result = await this.authService.updateUserAvatar(user, avatar)
+    return {
+      message: 'Avatar updated successfully',
+      ...result,
     }
   }
 }

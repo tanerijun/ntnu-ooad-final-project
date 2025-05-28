@@ -1,11 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import drive from '@adonisjs/drive/services/main'
 import vine from '@vinejs/vine'
-import { randomUUID } from 'node:crypto'
-import path from 'node:path'
-import env from '#start/env'
+import UploadService from '#services/upload_service'
 
 export default class UploadController {
+  private uploadService = new UploadService()
+
   async uploadImage({ request, response }: HttpContext) {
     try {
       if (!request.hasBody()) {
@@ -16,81 +15,23 @@ export default class UploadController {
         })
       }
 
-      try {
-        const imageFile = request.file('image')
-
-        if (!imageFile) {
-          return response.badRequest({
-            success: false,
-            message: 'No image file provided',
-            error: 'The "image" field is missing in the request',
-          })
-        }
-
-        const maxSize = 10 * 1024 * 1024 // 10MB
-        const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp']
-
-        if (imageFile.size > maxSize) {
-          return response.badRequest({
-            success: false,
-            message: 'Image file is too large (max 10MB)',
-            error: 'File size exceeds the allowed limit',
-          })
-        }
-
-        const extension = path.extname(imageFile.clientName).toLowerCase().substring(1)
-        if (!allowedExtensions.includes(extension)) {
-          return response.badRequest({
-            success: false,
-            message: 'Invalid file type',
-            error: 'Only jpg, jpeg, png, gif, and webp files are allowed',
-          })
-        }
-
-        const filename = `images/${randomUUID()}.${extension}`
-
-        try {
-          await imageFile.moveToDisk(filename, 'r2')
-
-          const r2Url = await drive.use('r2').getUrl(filename)
-
-          const url = r2Url.replace(
-            `${env.get('R2_ENDPOINT')}/${env.get('R2_BUCKET')}`,
-            env.get('R2_PUBLIC_URL')
-          )
-
-          return response.ok({
-            success: true,
-            data: {
-              filename,
-              url,
-              originalName: imageFile.clientName,
-              size: imageFile.size,
-            },
-          })
-        } catch (storageError) {
-          return response.badRequest({
-            success: false,
-            message: 'Failed to store image',
-            error: 'Storage configuration error or file system issue',
-            details: process.env.NODE_ENV === 'development' ? storageError.message : undefined,
-          })
-        }
-      } catch (processingError) {
+      const imageFile = request.file('image')
+      if (!imageFile) {
         return response.badRequest({
           success: false,
-          message: 'Failed to process the uploaded file',
-          error: 'File processing error',
-          details: process.env.NODE_ENV === 'development' ? processingError.message : undefined,
+          message: 'No image file provided',
+          error: 'The "image" field is missing in the request',
         })
       }
-    } catch (error) {
-      return response.badRequest({
-        success: false,
-        message: 'Failed to upload image',
-        error: error.message,
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+
+      const result = await this.uploadService.uploadImage(imageFile)
+
+      return response.ok({
+        success: true,
+        data: result,
       })
+    } catch (error) {
+      return this.handleUploadError(response, error)
     }
   }
 
@@ -100,48 +41,51 @@ export default class UploadController {
         filename: vine.string(),
       })
 
-      try {
-        const { filename } = await request.validateUsing(schema as any)
+      const { filename } = await request.validateUsing(schema as any)
+      await this.uploadService.deleteImage(filename)
 
-        if (!filename.startsWith('images/')) {
-          return response.badRequest({
-            success: false,
-            message: 'Invalid file path',
-            error: 'File path must start with "images/"',
-          })
-        }
-
-        // Delete from storage
-        try {
-          await drive.use('r2').delete(filename)
-
-          return response.ok({
-            success: true,
-            message: 'Image deleted successfully',
-          })
-        } catch (storageError) {
-          return response.badRequest({
-            success: false,
-            message: 'Failed to delete image from storage',
-            error: 'Storage error or file not found',
-            details: process.env.NODE_ENV === 'development' ? storageError.message : undefined,
-          })
-        }
-      } catch (validationError) {
-        return response.badRequest({
-          success: false,
-          message: 'Invalid filename',
-          error: 'Validation failed',
-          details: process.env.NODE_ENV === 'development' ? validationError.message : undefined,
-        })
-      }
+      return response.ok({
+        success: true,
+        message: 'Image deleted successfully',
+      })
     } catch (error) {
+      return this.handleDeleteError(response, error)
+    }
+  }
+
+  private handleUploadError(response: any, error: any) {
+    const errorMessages: Record<string, string> = {
+      'No image file provided': 'The "image" field is missing in the request',
+      'Image file is too large (max 10MB)': 'File size exceeds the allowed limit',
+      'Invalid file type': 'Only jpg, jpeg, png, gif, and webp files are allowed',
+      'Failed to store image': 'Storage configuration error or file system issue',
+    }
+
+    const message = error.message as string
+    const errorDetail = errorMessages[message] || 'File processing error'
+
+    return response.badRequest({
+      success: false,
+      message,
+      error: errorDetail,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+    })
+  }
+
+  private handleDeleteError(response: any, error: any) {
+    if (error.message.includes('Invalid file path')) {
       return response.badRequest({
         success: false,
-        message: 'Failed to delete image',
-        error: error.message,
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        message: 'Invalid file path',
+        error: 'File path must start with "images/"',
       })
     }
+
+    return response.badRequest({
+      success: false,
+      message: 'Failed to delete image',
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+    })
   }
 }

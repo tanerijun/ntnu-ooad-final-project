@@ -1,14 +1,12 @@
 import { HttpContext } from '@adonisjs/core/http'
-import Reminder from '#models/reminder'
+import ReminderService from '#services/reminder_service'
 
 export default class RemindersController {
+  private reminderService = new ReminderService()
+
   async index({ auth, response }: HttpContext) {
     try {
-      const user = auth.user!
-      const reminders = await Reminder.query()
-        .where('user_id', user.id)
-        .orderBy('reminder_time', 'asc')
-
+      const reminders = await this.reminderService.getUserReminders(auth.user!.id)
       return response.ok(reminders)
     } catch (error) {
       return response.badRequest({ error: 'Failed to fetch reminders' })
@@ -17,16 +15,8 @@ export default class RemindersController {
 
   async store({ auth, request, response }: HttpContext) {
     try {
-      const user = auth.user!
       const data = request.only(['title', 'description', 'reminder_time'])
-
-      const reminder = await Reminder.create({
-        ...data,
-        user_id: user.id,
-        is_completed: false,
-        is_notified: false,
-      })
-
+      const reminder = await this.reminderService.createReminder(auth.user!.id, data)
       return response.created(reminder)
     } catch (error) {
       return response.badRequest({ error: 'Failed to create reminder' })
@@ -35,12 +25,7 @@ export default class RemindersController {
 
   async show({ auth, params, response }: HttpContext) {
     try {
-      const user = auth.user!
-      const reminder = await Reminder.query()
-        .where('id', params.id)
-        .where('user_id', user.id)
-        .firstOrFail()
-
+      const reminder = await this.reminderService.getReminderById(params.id, auth.user!.id)
       return response.ok(reminder)
     } catch (error) {
       return response.notFound({ error: 'Reminder not found' })
@@ -49,16 +34,8 @@ export default class RemindersController {
 
   async update({ auth, params, request, response }: HttpContext) {
     try {
-      const user = auth.user!
-      const reminder = await Reminder.query()
-        .where('id', params.id)
-        .where('user_id', user.id)
-        .firstOrFail()
-
       const data = request.only(['title', 'description', 'reminder_time', 'is_completed'])
-      reminder.merge(data)
-      await reminder.save()
-
+      const reminder = await this.reminderService.updateReminder(params.id, auth.user!.id, data)
       return response.ok(reminder)
     } catch (error) {
       return response.badRequest({ error: 'Failed to update reminder' })
@@ -67,13 +44,7 @@ export default class RemindersController {
 
   async destroy({ auth, params, response }: HttpContext) {
     try {
-      const user = auth.user!
-      const reminder = await Reminder.query()
-        .where('id', params.id)
-        .where('user_id', user.id)
-        .firstOrFail()
-
-      await reminder.delete()
+      await this.reminderService.deleteReminder(params.id, auth.user!.id)
       return response.ok({ message: 'Reminder deleted successfully' })
     } catch (error) {
       return response.badRequest({ error: 'Failed to delete reminder' })
@@ -82,24 +53,7 @@ export default class RemindersController {
 
   async getPending({ auth, response }: HttpContext) {
     try {
-      const user = auth.user!
-      const now = new Date()
-
-      const pendingReminders = await Reminder.query()
-        .where('user_id', user.id)
-        .where('reminder_time', '<=', now)
-        .where('is_notified', false)
-        .where('is_completed', false)
-        .orderBy('reminder_time', 'asc')
-
-      // Mark as notified
-      await Reminder.query()
-        .where('user_id', user.id)
-        .where('reminder_time', '<=', now)
-        .where('is_notified', false)
-        .where('is_completed', false)
-        .update({ is_notified: true })
-
+      const pendingReminders = await this.reminderService.getPendingReminders(auth.user!.id)
       return response.ok(pendingReminders)
     } catch (error) {
       return response.badRequest({ error: 'Failed to fetch pending reminders' })
