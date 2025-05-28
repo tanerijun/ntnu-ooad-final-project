@@ -1,6 +1,15 @@
 # OOAD Study Helper
 
-A study productivity application
+A study productivity application created for NTNU OOAD (Object-Oriented Analysis and Design) course final project.
+
+## Main Features
+
+- **Authentication System**: User registration, login, profile management
+- **Notes Management**: Rich text editor with text formatting, image upload, tagging system
+- **Study Timer**: Real-time timer sessions with auto-sync
+- **Reminders**: Calendar-based reminder system with notifications
+- **Statistics**: Study analytics and progress tracking
+- **Global Search**: Efficient search across notes and tags
 
 ## Tech Stack
 
@@ -9,91 +18,97 @@ A study productivity application
 - Frontend Framework: React
 - Backend Framework: AdonisJS
 
-## Features
+## File Organization
 
-- Auth:
-  - Login
-    - Store authentication token in browser cache
-    - If user has authentication token, automatically log user in
-    - else: ask user for email and password
-      - Save authentication token in browser cache
-  - Register
-    - Ask for user’s data (name, email, password)
-    - Save authentication in browser cache
-    - Redirect user to login page
-    - Authentication token found in browser cache → Auto login
-  - Logout
-    - Delete authentication token
-    - Redirect to login page
-- Statistics:
-  - Fetch data (user, notes, timers, reminders) from DB
-  - Perform analysis
-  - Render charts for visualization
-    - Show notes analysis
-    - Show tags analysis
-    - Show study goal progress
-    - Show monthly study activity
-    - Show tag distribution
-    - Show note content analytics
-    - Show recently updated notes for quick access
-- Notes:
-  - Show list of notes: show title, content preview, tags, last updated time
-  - Create note:
-    - Ask for title, tags, and note content
-      - For each tag in tags: create tag if not yet available
-      - User writes note content using “rich text editor”
-        - “Rich text editor” supports the following operations:
-          - Writing text with different formatting: bold, italic, underline, strikethrough
-          - Writing text with different semantics: headers, body, quotes
-          - Writing text with different alignments: left, center, right, justify
-          - Inserting image
-          - Undo (Ctrl + Z)
-          - Redo (Ctrl + Shift + Z)
-        - “Rich text editor” supports keyboard shortcut for easier editing
-          - Press help button in editor toolbar for more info
-  - Update note: same as “Create note”, but modify existing record in DB instead of creating a new one
-  - Delete note: delete note from DB
-- Timer:
-  - Show daily study time (synced real-time with running timers)
-    - Aggregate the total time of all timer sessions
-  - Show daily timer sessions (synced real-time with running timers)
-  - Create timer session
-    - Ask for timer session name
-  - Run timer
-    - Automatically sync timer with DB every predetermined interval
-  - Update timer session
-    - Change timer session name
-  - Delete timer session
-    - Remove timer session from DB
-- Reminders:
-  - Show calendar
-  - Show upcoming reminders
-  - Show today’s reminders
-  - Reminder UI
-    - Different UI for upcoming reminder, overdue reminder, completed reminder
-  - Create reminder:
-    - Ask for title, description, date, time
-  - Update reminder:
-    - Checkbox to indicate completion
-    - Allow updating title, description, date, time
-  - Delete reminder:
-    - Remove reminder from DB
-- Notification:
-  - Constantly poll server for ongoing reminders
-  - Show reminder title and description
-  - Shortcut to reminders page
-- Search:
-  - Support opening search from anywhere using keyboard shortcut (Ctrl + K)
-  - Automatic search when user stop typing
-    - Implemented debouncing to avoid spamming the backend
-  - Click on search result redirects to note edit page
-- Account:
-  - Allow changing profile picture
-  - Update name
-  - Update email
-  - Update password
-- Tags:
-  - Located in sidebar
-  - Allow quick note filtering using tags
-  - Allow creating tags
-  - Creating new note from tag page automatically pre-fill tags field in form with the current tag
+```
+ooad-final/
+├── README.md                     # This file - project setup guide
+├── backend/                      # AdonisJS Backend Application
+│   ├── app/
+│   │   ├── controllers/          # HTTP Controllers (Presentation Layer)
+│   │   │   ├── auth_controller.ts
+│   │   │   ├── notes_controller.ts
+│   │   │   ├── tags_controller.ts
+│   │   │   ├── timer_sessions_controller.ts
+│   │   │   ├── reminders_controller.ts
+│   │   │   ├── upload_controller.ts
+│   │   │   └── user_task_controller.ts
+│   │   ├── models/               # Domain Models (Data Layer)
+│   │   │   ├── user.ts
+│   │   │   ├── note.ts
+│   │   │   ├── tag.ts
+│   │   │   ├── timer_session.ts
+│   │   │   ├── reminder.ts
+│   │   │   └── user_task.ts
+│   │   ├── services/             # Business Logic Layer
+│   │   │   ├── base_service.ts   # Abstract base class
+│   │   │   ├── auth_service.ts
+│   │   │   ├── notes_service.ts
+│   │   │   ├── tags_service.ts
+│   │   │   ├── timer_service.ts
+│   │   │   ├── reminder_service.ts
+│   │   │   └── upload_service.ts
+│   │   ├── validators/           # Request validation schemas
+│   │   ├── middleware/           # HTTP middleware
+│   │   └── exceptions/           # Custom exception handlers
+│   ├── database/
+│   │   ├── migrations/           # Database schema migrations
+│   │   └── seeders/              # Database seed files
+│   ├── config/                   # Application configuration
+│   ├── start/                    # Application startup files
+│   ├── .env.example              # Environment variables template
+│   ├── package.json
+│   └── adonisrc.ts               # AdonisJS configuration
+├── frontend/                     # React Frontend Application
+│   ├── src/
+│   │   ├── app/                  # Next.js app router pages
+│   │   ├── components/           # React UI components
+│   │   ├── lib/                  # Client libraries and utilities
+│   │   │   ├── api/
+│   │   │   │   └── client.ts     # Base API client (Facade pattern)
+│   │   │   ├── auth/
+│   │   │   │   └── client.ts     # Authentication client
+│   │   │   ├── notes/
+│   │   │   │   └── client.ts     # Notes API client
+│   │   │   ├── tags/
+│   │   │   │   ├── client.ts     # Tags API client
+│   │   │   │   └── storage.ts    # Tag manager (Singleton pattern)
+│   │   │   ├── timer/
+│   │   │   │   └── client.ts     # Timer sessions client
+│   │   │   ├── reminder/
+│   │   │   │   └── client.ts     # Reminders client
+│   │   │   └── image/
+│   │   │       └── client.ts     # Image upload client
+│   │   ├── types/                # TypeScript type definitions
+│   │   ├── hooks/                # Custom React hooks
+│   │   ├── contexts/             # React context providers
+│   │   └── styles/               # CSS and styling files
+│   ├── public/                   # Static assets
+│   ├── .env.example              # Environment variables template
+│   ├── package.json
+│   ├── next.config.mjs           # Next.js configuration
+│   └── tsconfig.json             # TypeScript configuration
+└── docs/                         # Project documentation (optional)
+    ├── use-cases.md
+    ├── sequence-diagrams.md
+    ├── state-diagrams.md
+    └── design-patterns.md
+```
+
+## Prerequisites
+
+- Node.js (v20 or later)
+- npm (v9 or later)
+
+## Local Development
+
+1. Create a `.env` file in both `backend/` and `frontend/` directories and fill it based on the `.env.example` files. **For professor or TA, use the provided .env files attached with the project report.**
+
+2. Install dependencies (recommended to run 2 terminal instances):
+
+   - For backend: `cd backend && npm install`
+   - For frontend: `cd frontend && npm install`
+
+3. Run the development servers:
+   - For backend: `cd backend && npm run dev`
+   - For frontend: `cd frontend && npm run dev`
