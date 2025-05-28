@@ -1,0 +1,99 @@
+# OOAD Study Helper
+
+A study productivity application
+
+## Tech Stack
+
+- Programming Language: TypeScript
+- Database: PostgreSQL
+- Frontend Framework: React
+- Backend Framework: AdonisJS
+
+## Features
+
+- Auth:
+  - Login
+    - Store authentication token in browser cache
+    - If user has authentication token, automatically log user in
+    - else: ask user for email and password
+      - Save authentication token in browser cache
+  - Register
+    - Ask for user’s data (name, email, password)
+    - Save authentication in browser cache
+    - Redirect user to login page
+    - Authentication token found in browser cache → Auto login
+  - Logout
+    - Delete authentication token
+    - Redirect to login page
+- Statistics:
+  - Fetch data (user, notes, timers, reminders) from DB
+  - Perform analysis
+  - Render charts for visualization
+    - Show notes analysis
+    - Show tags analysis
+    - Show study goal progress
+    - Show monthly study activity
+    - Show tag distribution
+    - Show note content analytics
+    - Show recently updated notes for quick access
+- Notes:
+  - Show list of notes: show title, content preview, tags, last updated time
+  - Create note:
+    - Ask for title, tags, and note content
+      - For each tag in tags: create tag if not yet available
+      - User writes note content using “rich text editor”
+        - “Rich text editor” supports the following operations:
+          - Writing text with different formatting: bold, italic, underline, strikethrough
+          - Writing text with different semantics: headers, body, quotes
+          - Writing text with different alignments: left, center, right, justify
+          - Inserting image
+          - Undo (Ctrl + Z)
+          - Redo (Ctrl + Shift + Z)
+        - “Rich text editor” supports keyboard shortcut for easier editing
+          - Press help button in editor toolbar for more info
+  - Update note: same as “Create note”, but modify existing record in DB instead of creating a new one
+  - Delete note: delete note from DB
+- Timer:
+  - Show daily study time (synced real-time with running timers)
+    - Aggregate the total time of all timer sessions
+  - Show daily timer sessions (synced real-time with running timers)
+  - Create timer session
+    - Ask for timer session name
+  - Run timer
+    - Automatically sync timer with DB every predetermined interval
+  - Update timer session
+    - Change timer session name
+  - Delete timer session
+    - Remove timer session from DB
+- Reminders:
+  - Show calendar
+  - Show upcoming reminders
+  - Show today’s reminders
+  - Reminder UI
+    - Different UI for upcoming reminder, overdue reminder, completed reminder
+  - Create reminder:
+    - Ask for title, description, date, time
+  - Update reminder:
+    - Checkbox to indicate completion
+    - Allow updating title, description, date, time
+  - Delete reminder:
+    - Remove reminder from DB
+- Notification:
+  - Constantly poll server for ongoing reminders
+  - Show reminder title and description
+  - Shortcut to reminders page
+- Search:
+  - Support opening search from anywhere using keyboard shortcut (Ctrl + K)
+  - Automatic search when user stop typing
+    - Implemented debouncing to avoid spamming the backend
+  - Click on search result redirects to note edit page
+- Account:
+  - Allow changing profile picture
+  - Update name
+  - Update email
+  - Update password
+- Tags:
+  - Located in sidebar
+  - Allow quick note filtering using tags
+  - Allow creating tags
+  - Creating new note from tag page automatically pre-fill tags field in form with the current tag
