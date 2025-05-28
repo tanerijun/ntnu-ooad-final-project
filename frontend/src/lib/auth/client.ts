@@ -3,6 +3,7 @@
 import type { User } from '@/types/user';
 import { apiClient } from '@/lib/api/client';
 import { logger } from '@/lib/default-logger';
+import { TagManager } from '@/lib/tags/storage';
 
 export interface SignUpParams {
   name: string;
@@ -77,6 +78,9 @@ class AuthClient {
     try {
       await apiClient.delete('/logout');
       localStorage.removeItem('access-token');
+
+      TagManager.getInstance().clear();
+
       return {};
     } catch (error) {
       logger.error('Error during logout:', error);

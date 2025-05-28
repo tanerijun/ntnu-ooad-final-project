@@ -185,6 +185,12 @@ export class TagManager {
   public isReady(): boolean {
     return this.isLoaded;
   }
+
+  public clear(): void {
+    this.tags = [];
+    this.isLoaded = false;
+    this.notifyListeners();
+  }
 }
 
 export const tagManager = TagManager.getInstance();

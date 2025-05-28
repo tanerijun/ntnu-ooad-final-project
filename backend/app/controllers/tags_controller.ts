@@ -5,7 +5,11 @@ export default class TagsController {
   async index({ auth }: HttpContext) {
     await auth.check()
 
-    return await Tag.query().orderBy('name', 'asc')
+    return await Tag.query()
+      .whereHas('notes', (noteBuilder) => {
+        noteBuilder.where('userId', auth.user!.id)
+      })
+      .orderBy('name', 'asc')
   }
 
   async store({ request, auth }: HttpContext) {
