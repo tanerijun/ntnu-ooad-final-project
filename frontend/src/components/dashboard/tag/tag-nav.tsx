@@ -3,16 +3,13 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
-import { Bookmarks, Plus } from '@phosphor-icons/react';
+import { Box, Button, Stack, Typography } from '@mui/material';
+import { Bookmarks } from '@phosphor-icons/react';
 
-import { logger } from '@/lib/default-logger';
 import { TagManager, type StoredTag, type TagEventListener } from '@/lib/tags/storage';
 
 export default function TagNavItem(): React.JSX.Element {
   const router = useRouter();
-  const [adding, setAdding] = useState(false);
-  const [newTagName, setNewTagName] = useState('');
   const [tags, setTags] = useState<string[]>([]);
 
   // Initialize tag manager and listen for tag updates from other components
@@ -40,21 +37,7 @@ export default function TagNavItem(): React.JSX.Element {
     };
   }, []);
 
-  const handleCreateTag = async () => {
-    const trimmed = newTagName.trim();
-    if (trimmed) {
-      try {
-        const tagManager = TagManager.getInstance();
-        const storedTag = await tagManager.addTag(trimmed);
 
-        setNewTagName('');
-        setAdding(false);
-        router.push(`/dashboard/tag/${storedTag.slug}`);
-      } catch (error) {
-        logger.error('Failed to create tag:', error);
-      }
-    }
-  };
 
   const handleTagClick = (slug: string) => {
     router.push(`/dashboard/tag/${slug}`);
@@ -73,12 +56,11 @@ export default function TagNavItem(): React.JSX.Element {
           overflow: 'hidden',
         }}
       >
-        {/* Header with Add button */}
+        {/* Header */}
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
             padding: '12px 16px',
             bgcolor: 'rgba(255, 255, 255, 0.06)',
             color: 'var(--NavItem-color)',
@@ -97,61 +79,9 @@ export default function TagNavItem(): React.JSX.Element {
               Tags
             </Typography>
           </Box>
-          <IconButton
-            size="small"
-            onClick={() => {
-              setAdding((v) => !v);
-            }}
-            sx={{
-              color: 'var(--NavItem-icon-color)',
-              bgcolor: 'rgba(255, 255, 255, 0.1)',
-              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
-            }}
-          >
-            <Plus fontSize="small" />
-          </IconButton>
         </Box>
 
-        {/* Text input when adding */}
-        {adding ? (
-          <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.03)' }}>
-            <TextField
-              size="small"
-              variant="outlined"
-              placeholder="Enter tag name"
-              value={newTagName}
-              onChange={(e) => {
-                setNewTagName(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') void handleCreateTag();
-                if (e.key === 'Escape') {
-                  setNewTagName('');
-                  setAdding(false);
-                }
-              }}
-              fullWidth
-              autoFocus
-              InputProps={{
-                sx: {
-                  color: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  '& input::placeholder': {
-                    color: 'rgba(255,255,255,0.6)',
-                  },
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.15)',
-                  },
-                  '&.Mui-focused': {
-                    backgroundColor: 'rgba(255,255,255,0.15)',
-                    borderColor: 'rgba(255,255,255,0.3)',
-                  },
-                },
-              }}
-            />
-          </Box>
-        ) : null}
+
 
         {/* List of tags */}
         {tags.length > 0 && (
