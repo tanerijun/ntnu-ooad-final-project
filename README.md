@@ -2,6 +2,12 @@
 
 A study productivity application created for NTNU OOAD (Object-Oriented Analysis and Design) course final project.
 
+## Live Demo
+
+[OOAD Study Helper Demo](https://ntnu-ooad-final-project.vercel.app)
+
+> Please note that initial interactions might be slow as server is cold-starting. Subsequent interactions will be faster.
+
 ## Main Features
 
 - **Authentication System**: User registration, login, profile management
