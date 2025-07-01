@@ -8,6 +8,28 @@ A study productivity application created for NTNU OOAD (Object-Oriented Analysis
 
 > Please note that initial interactions might be slow as server is cold-starting. Subsequent interactions will be faster.
 
+## Demo Screenshots
+
+<p align="center">
+  <img src="assets/demo/dashboard.png" alt="Dashboard" width="45%">
+  <img src="assets/demo/profile.png" alt="Profile Page" width="45%">
+</p>
+
+<p align="center">
+  <img src="assets/demo/notes.png" alt="Notes Management" width="45%">
+  <img src="assets/demo/note-edit.png" alt="Note Editor" width="45%">
+</p>
+
+<p align="center">
+  <img src="assets/demo/reminders.png" alt="Reminders Management" width="45%">
+  <img src="assets/demo/reminder-edit.png" alt="Reminder Editor" width="45%">
+</p>
+
+<p align="center">
+  <img src="assets/demo/timer.png" alt="Timers" width="45%">
+  <img src="assets/demo/search.png" alt="Search" width="45%">
+</p>
+
 ## Main Features
 
 - **Authentication System**: User registration, login, profile management
@@ -111,7 +133,6 @@ ooad-final/
 1. Create a `.env` file in both `backend/` and `frontend/` directories and fill it based on the `.env.example` files. **For professor or TA, use the provided .env files attached with the project report.**
 
 2. Install dependencies (recommended to run 2 terminal instances):
-
    - For backend: `cd backend && npm install`
    - For frontend: `cd frontend && npm install`
 
